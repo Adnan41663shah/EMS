@@ -16,6 +16,9 @@ if (majorVersion < 18) {
   process.exit(1);
 }
 
+
+// Hello wordl
+
 console.log(`✅ Node.js version: ${nodeVersion}`);
 
 // Install root dependencies
