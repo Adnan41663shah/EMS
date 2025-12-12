@@ -1,0 +1,22 @@
+{
+  "name": "cloudblitz-crm",
+  "version": "1.0.0",
+  "description": "Production-grade Customer Relationship Management system",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd backend && npm run dev",
+    "client:dev": "cd frontend && npm run dev",
+    "build": "npm run server:build && npm run client:build",
+    "server:build": "cd backend && npm run build",
+    "client:build": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "keywords": ["crm", "nodejs", "react", "typescript", "mongodb"],
+  "author": "CloudBlitz Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -1,0 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Ensure dark: utilities use the class strategy in Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  --color-secondary-50: #f8fafc;
+  --color-secondary-100: #f1f5f9;
+  --color-secondary-200: #e2e8f0;
+  --color-secondary-300: #cbd5e1;
+  --color-secondary-400: #94a3b8;
+  --color-secondary-500: #64748b;
+  --color-secondary-600: #475569;
+  --color-secondary-700: #334155;
+  --color-secondary-800: #1e293b;
+  --color-secondary-900: #0f172a;
+  --color-secondary-950: #020617;
+
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
+
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  border-color: var(--color-secondary-200);
+}
+
+body {
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-900);
+  font-family: var(--font-family-sans);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+html.dark body,
+body.dark {
+  background-color: var(--color-secondary-900);
+  color: var(--color-secondary-50);
+}
+.btn {
+  @apply inline-flex items-center justify-center rounded-md text-sm font-medium select-none gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 shadow-sm hover:shadow active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+}
+
+/* Gradient colors for buttons */
+.btn-primary {
+  background: linear-gradient(to right, #f97316, #ec4899, #8b5cf6);
+  @apply text-white focus-visible:ring-blue-500 disabled:opacity-50;
+  border: none;
+}
+
+html.dark .btn-primary,
+body.dark .btn-primary {
+  background: linear-gradient(to right, #c2410c, #be185d, #6d28d9);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(to right, #ea580c, #db2777, #7c3aed);
+}
+
+html.dark .btn-primary:hover:not(:disabled),
+body.dark .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(to right, #9a3412, #9f1239, #5b21b6);
+}
+
+.btn-secondary {
+  background: linear-gradient(to right, #f97316, #ec4899, #8b5cf6);
+  @apply text-white focus-visible:ring-blue-500 disabled:opacity-50;
+  border: none;
+}
+
+html.dark .btn-secondary,
+body.dark .btn-secondary {
+  background: linear-gradient(to right, #c2410c, #be185d, #6d28d9);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(to right, #ea580c, #db2777, #7c3aed);
+}
+
+html.dark .btn-secondary:hover:not(:disabled),
+body.dark .btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(to right, #9a3412, #9f1239, #5b21b6);
+}
+
+.btn-outline {
+  background: linear-gradient(to right, #f97316, #ec4899, #8b5cf6);
+  @apply text-white focus-visible:ring-blue-500 disabled:opacity-50;
+  border: none;
+}
+
+html.dark .btn-outline,
+body.dark .btn-outline {
+  background: linear-gradient(to right, #c2410c, #be185d, #6d28d9);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: linear-gradient(to right, #ea580c, #db2777, #7c3aed);
+}
+
+html.dark .btn-outline:hover:not(:disabled),
+body.dark .btn-outline:hover:not(:disabled) {
+  background: linear-gradient(to right, #9a3412, #9f1239, #5b21b6);
+}
+
+.btn-warning {
+  background: linear-gradient(to right, #f97316, #ec4899, #8b5cf6);
+  @apply text-white focus-visible:ring-blue-500 disabled:opacity-50;
+  border: none;
+}
+
+html.dark .btn-warning,
+body.dark .btn-warning {
+  background: linear-gradient(to right, #c2410c, #be185d, #6d28d9);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: linear-gradient(to right, #ea580c, #db2777, #7c3aed);
+}
+
+html.dark .btn-warning:hover:not(:disabled),
+body.dark .btn-warning:hover:not(:disabled) {
+  background: linear-gradient(to right, #9a3412, #9f1239, #5b21b6);
+}
+
+/* Cancel button - no gradient */
+.btn-cancel {
+  @apply bg-gray-100 text-gray-900 hover:bg-gray-200 border border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700;
+}
+
+.btn-ghost {
+  @apply text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800;
+}
+
+.btn-sm {
+  @apply h-8 px-3 text-xs;
+}
+
+.btn-md {
+  @apply h-10 px-4 py-2;
+}
+
+.btn-lg {
+  @apply h-12 px-8 text-base;
+}
+
+.input {
+  @apply flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:placeholder:text-gray-400;
+}
+
+.card {
+  @apply rounded-lg border border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-50;
+}
+
+.card-header {
+  @apply flex flex-col space-y-1.5 p-2;
+}
+
+.card-title {
+  @apply text-2xl font-semibold leading-none tracking-tight;
+}
+
+.card-description {
+  @apply text-sm text-gray-500 dark:text-gray-400;
+}
+
+.card-content {
+  @apply p-4;
+}
+
+.card-footer {
+  @apply flex items-center p-6 pt-0;
+}
+
+.badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+/* Global cursor behavior for interactive elements */
+button:not(:disabled),
+a[href],
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+/* Ensure left icons don't overlap text inside inputs/selects/textarea */
+.input.pl-10,
+select.input.pl-10,
+textarea.input.pl-10 {
+  padding-left: 2.5rem; /* matches pl-10 */
+}
+
+.badge-default {
+  @apply bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100;
+}
+
+.badge-primary {
+  @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+}
+
+.badge-success {
+  @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
+
+.badge-warning {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+}
+
+.badge-error {
+  @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f3f4f6; /* fallback for bg-gray-100 */
+}
+html.dark ::-webkit-scrollbar-track,
+body.dark ::-webkit-scrollbar-track {
+  background-color: #1f2937; /* fallback for dark:bg-gray-800 */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #d1d5db; /* fallback for bg-gray-300 */
+  border-radius: 9999px;
+}
+html.dark ::-webkit-scrollbar-thumb,
+body.dark ::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* fallback for dark:bg-gray-600 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af; /* fallback for bg-gray-400 */
+}
+html.dark ::-webkit-scrollbar-thumb:hover,
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280; /* fallback for dark:bg-gray-500 */
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Slide in animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
