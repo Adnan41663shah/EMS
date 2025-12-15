@@ -1,8 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
-import { IInquiry, CourseType, LocationType, MediumType, InquiryStatus, FollowUpType, FollowUpStatus, FollowUpOutcome, FollowUpPriority } from '../types';
+import { IInquiry, CourseType, LocationType, MediumType, InquiryStatus, FollowUpType, FollowUpStatus, FollowUpOutcome } from '../types';
 
 const followUpSchema = new Schema({
-  // Common fields for both presales and sales
   type: {
     type: String,
     enum: ['call', 'email', 'whatsapp'],
@@ -15,7 +14,7 @@ const followUpSchema = new Schema({
   },
   title: {
     type: String,
-    required: false, // Not required for sales follow-ups
+    required: false,
     trim: true,
     maxlength: [100, 'Title cannot be more than 100 characters']
   },
@@ -44,7 +43,6 @@ const followUpSchema = new Schema({
     trim: true,
     maxlength: [1000, 'Message cannot be more than 1000 characters']
   },
-  // Sales-specific fields
   leadStage: {
     type: String,
     enum: ['Cold', 'Warm', 'Hot', 'Not Interested', 'Walkin', 'Online-Conversion'],
@@ -55,8 +53,6 @@ const followUpSchema = new Schema({
     trim: true,
     required: false
   },
-  // assignedTo removed
-  // tags removed
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -141,13 +137,11 @@ const inquirySchema = new Schema<IInquiry>({
     trim: true,
     maxlength: [1000, 'Message cannot be more than 1000 characters']
   },
-  // Lead heat status (kept as-is)
   status: {
     type: String,
     default: 'warm',
     trim: true
   },
-  // Assignment lifecycle fields for Presales/Sales routing
   assignmentStatus: {
     type: String,
     enum: ['not_assigned', 'assigned', 'reassigned', 'forwarded_to_sales'],

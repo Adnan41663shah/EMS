@@ -14,6 +14,7 @@ import authRoutes from './routes/auth';
 import inquiryRoutes from './routes/inquiry';
 import userRoutes from './routes/user';
 import optionsRoutes from './routes/options';
+import studentRoutes from './routes/student';
 
 // Load environment variables
 dotenv.config();
@@ -97,6 +98,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/options', optionsRoutes);
+app.use('/api/students', studentRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

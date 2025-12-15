@@ -23,6 +23,9 @@ const activitySchema = new Schema<IActivity>({
   timestamps: { createdAt: true, updatedAt: false }
 });
 
+// Index for better query performance
+activitySchema.index({ inquiry: 1 });
+activitySchema.index({ actor: 1 });
+activitySchema.index({ createdAt: -1 });
+
 export default mongoose.model<IActivity>('Activity', activitySchema);
-
-

@@ -78,8 +78,8 @@ export const createInquiry = async (req: Request, res: Response) => {
 export const getInquiries = async (req: Request, res: Response) => {
   try {
     const {
-      page = 1,
-      limit = 10,
+      page,
+      limit,
       search,
       status,
       course,
@@ -92,6 +92,11 @@ export const getInquiries = async (req: Request, res: Response) => {
       sort = 'createdAt',
       order = 'desc'
     } = req.query as InquiryFilters;
+    
+    // If page/limit are not provided, return all results (for admin all inquiries page)
+    const usePagination = page !== undefined && limit !== undefined;
+    const pageNum = page ? (typeof page === 'string' ? parseInt(page, 10) : Number(page)) : 1;
+    const limitNum = limit ? (typeof limit === 'string' ? parseInt(limit, 10) : Number(limit)) : 10;
 
     const query: any = {};
     const userRole = req.user?.role;
@@ -267,28 +272,41 @@ export const getInquiries = async (req: Request, res: Response) => {
     const sortObj: any = {};
     sortObj[sort] = sortOrder;
 
-    const inquiries = await Inquiry.find(query)
-      .populate('createdBy', 'name email')
-      .populate('assignedTo', 'name email')
-      .populate('forwardedBy', 'name email')
-      .sort(sortObj)
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+    let inquiries;
+    let total = await Inquiry.countDocuments(query);
 
-    const total = await Inquiry.countDocuments(query);
+    if (usePagination) {
+      // Use pagination if page/limit are provided
+      inquiries = await Inquiry.find(query)
+        .populate('createdBy', 'name email')
+        .populate('assignedTo', 'name email')
+        .populate('forwardedBy', 'name email')
+        .sort(sortObj)
+        .limit(limitNum)
+        .skip((pageNum - 1) * limitNum);
+    } else {
+      // Return all results if pagination is not requested
+      inquiries = await Inquiry.find(query)
+        .populate('createdBy', 'name email')
+        .populate('assignedTo', 'name email')
+        .populate('forwardedBy', 'name email')
+        .sort(sortObj);
+    }
 
     const response: ApiResponse = {
       success: true,
       message: 'Inquiries retrieved successfully',
       data: {
         inquiries,
-        pagination: {
-          currentPage: page,
-          totalPages: Math.ceil(total / limit),
-          totalItems: total,
-          hasNext: page < Math.ceil(total / limit),
-          hasPrev: page > 1
-        }
+        ...(usePagination && {
+          pagination: {
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            totalItems: total,
+            hasNext: pageNum < Math.ceil(total / limitNum),
+            hasPrev: pageNum > 1
+          }
+        })
       }
     };
 
@@ -775,7 +793,7 @@ export const addFollowUp = async (req: Request, res: Response) => {
     }
 
     const followUp: any = {
-      type,
+      type: type || 'call', // Default to 'call' if not provided (for sales follow-ups)
       inquiryStatus: inquiryStatus || 'warm',
       createdBy: req.user?._id!
     };
@@ -1111,6 +1129,22 @@ export const getMyFollowUps = async (req: Request, res: Response) => {
   }
 };
 
+// Helper function to check if an inquiry is admitted
+// An inquiry is admitted if its latest follow-up has leadStage='Hot' and subStage='Confirmed Admission'
+const isAdmittedStudent = (inquiry: any): boolean => {
+  if (!inquiry.followUps || inquiry.followUps.length === 0) {
+    return false;
+  }
+  
+  // Sort follow-ups by createdAt descending to get the latest one
+  const sortedFollowUps = [...inquiry.followUps].sort((a: any, b: any) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+  const latestFollowUp = sortedFollowUps[0];
+  
+  return latestFollowUp.leadStage === 'Hot' && latestFollowUp.subStage === 'Confirmed Admission';
+};
+
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
     const userId = req.user?._id;
@@ -1158,28 +1192,67 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         }
       : { assignedTo: userId };
 
+    // Fetch all inquiries with followUps to filter out admitted students
     const [
-      totalInquiries,
-      hotInquiries,
-      warmInquiries,
-      coldInquiries,
-      myInquiries,
-      assignedInquiries,
+      allInquiriesForFiltering,
+      myInquiriesList,
+      attendedInquiriesList,
+      presalesInquiriesList,
+      salesInquiriesList,
       recentInquiries
     ] = await Promise.all([
-      Inquiry.countDocuments(query),
-      Inquiry.countDocuments({ ...query, status: 'hot' }),
-      Inquiry.countDocuments({ ...query, status: 'warm' }),
-      Inquiry.countDocuments({ ...query, status: 'cold' }),
-      Inquiry.countDocuments(myInquiriesQuery),
-      userRole !== 'user' ? Inquiry.countDocuments(attendedInquiriesQuery) : 0,
+      // Get all inquiries matching the base query with followUps populated
+      Inquiry.find(query).select('followUps status department').lean(),
+      // Get my inquiries for filtering
+      Inquiry.find(myInquiriesQuery).select('followUps').lean(),
+      // Get attended inquiries for filtering
+      userRole !== 'user' ? Inquiry.find(attendedInquiriesQuery).select('followUps').lean() : [],
+      // Get presales inquiries for filtering
+      Inquiry.find({ department: 'presales' }).select('followUps').lean(),
+      // Get sales inquiries for filtering
+      Inquiry.find({ department: 'sales' }).select('followUps').lean(),
+      // Get recent inquiries (we'll filter and populate after)
       Inquiry.find(query)
-        .populate('createdBy', 'name email')
-        .populate('assignedTo', 'name email')
-        .populate('forwardedBy', 'name email')
+        .select('followUps')
         .sort({ createdAt: -1 })
-        .limit(5)
+        .limit(10)
+        .lean()
     ]);
+
+    // Filter out admitted students from all lists
+    const nonAdmittedInquiries = allInquiriesForFiltering.filter((inq: any) => !isAdmittedStudent(inq));
+    const nonAdmittedMyInquiries = myInquiriesList.filter((inq: any) => !isAdmittedStudent(inq));
+    const nonAdmittedAttendedInquiries = attendedInquiriesList.filter((inq: any) => !isAdmittedStudent(inq));
+    const nonAdmittedPresalesInquiries = presalesInquiriesList.filter((inq: any) => !isAdmittedStudent(inq));
+    const nonAdmittedSalesInquiries = salesInquiriesList.filter((inq: any) => !isAdmittedStudent(inq));
+    const nonAdmittedRecentInquiries = recentInquiries.filter((inq: any) => !isAdmittedStudent(inq)).slice(0, 5);
+
+    // Calculate counts excluding admitted students
+    const totalInquiries = nonAdmittedInquiries.length;
+    const hotInquiries = nonAdmittedInquiries.filter((inq: any) => inq.status === 'hot').length;
+    const warmInquiries = nonAdmittedInquiries.filter((inq: any) => inq.status === 'warm').length;
+    const coldInquiries = nonAdmittedInquiries.filter((inq: any) => inq.status === 'cold').length;
+    const myInquiries = nonAdmittedMyInquiries.length;
+    const assignedInquiries = nonAdmittedAttendedInquiries.length;
+    const presalesInquiries = nonAdmittedPresalesInquiries.length;
+    const salesInquiries = nonAdmittedSalesInquiries.length;
+
+    // Calculate admitted students count (all inquiries, not filtered by query)
+    const allInquiriesForAdmitted = await Inquiry.find({ followUps: { $exists: true, $ne: [] } })
+      .select('followUps')
+      .lean();
+    const admittedStudentsCount = allInquiriesForAdmitted.filter((inq: any) => isAdmittedStudent(inq)).length;
+
+    // Populate recent inquiries (filtered, now populate)
+    const recentInquiriesIds = nonAdmittedRecentInquiries.map((inq: any) => inq._id);
+    const recentInquiriesPopulated = recentInquiriesIds.length > 0
+      ? await Inquiry.find({ _id: { $in: recentInquiriesIds } })
+          .populate('createdBy', 'name email')
+          .populate('assignedTo', 'name email')
+          .populate('forwardedBy', 'name email')
+          .sort({ createdAt: -1 })
+          .limit(5)
+      : [];
 
     const stats: DashboardStats = {
       totalInquiries,
@@ -1188,7 +1261,10 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       coldInquiries,
       myInquiries,
       assignedInquiries,
-      recentInquiries
+      presalesInquiries,
+      salesInquiries,
+      admittedStudents: admittedStudentsCount,
+      recentInquiries: recentInquiriesPopulated
     };
 
     const response: ApiResponse = {

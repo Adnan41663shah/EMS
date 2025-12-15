@@ -60,18 +60,19 @@ export type FollowUpStatus = 'scheduled' | 'completed' | 'cancelled' | 'reschedu
 
 export type FollowUpOutcome = 'positive' | 'neutral' | 'negative' | 'interested' | 'not_interested' | 'needs_time' | 'requested_info' | 'scheduled_meeting';
 
-export type FollowUpPriority = 'low' | 'medium' | 'high';
-
 export interface IFollowUp {
   _id?: string;
   type: FollowUpType;
   status: FollowUpStatus;
-  title: string;
+  title?: string;
   completedDate?: Date;
   duration?: number;
   outcome?: FollowUpOutcome;
   nextFollowUpDate?: Date;
   inquiryStatus?: InquiryStatus;
+  message?: string;
+  leadStage?: string;
+  subStage?: string;
   createdBy: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -120,5 +121,8 @@ export interface DashboardStats {
   coldInquiries: number;
   myInquiries: number;
   assignedInquiries: number;
+  presalesInquiries: number;
+  salesInquiries: number;
+  admittedStudents: number;
   recentInquiries: IInquiry[];
 }

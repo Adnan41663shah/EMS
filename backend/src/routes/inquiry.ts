@@ -280,6 +280,7 @@ const assignInquiryValidation = [
 // Add follow-up validation
 const addFollowUpValidation = [
   body('type')
+    .optional()
     .isIn(['call', 'email', 'whatsapp'])
     .withMessage('Invalid follow-up type'),
   body('title')
