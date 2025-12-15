@@ -196,10 +196,17 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             >
               <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </button>
-            {/* Logo Text */}
-            <h1 className="text-sm sm:text-xl lg:text-2xl font-bold text-white py-0 leading-tight">
-              CloudBlitz CRM
-            </h1>
+            {/* Logo Text with Role */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <h1 className="text-sm sm:text-xl lg:text-2xl font-bold text-white py-0 leading-tight">
+                CloudBlitz CRM
+              </h1>
+              {user?.role && (
+                <span className="text-xs sm:text-sm lg:text-base font-medium text-white/90 bg-white/20 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border border-white/30 backdrop-blur-sm">
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Search Bar - Only show for presales, sales, and admin */}

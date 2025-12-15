@@ -145,7 +145,7 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
         : undefined;
 
       const followUpData: any = {
-        type: data.type,
+        type: data.type || 'call', // Ensure type is always sent, default to 'call'
         leadStage: data.leadStage,
       };
 

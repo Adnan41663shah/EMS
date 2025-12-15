@@ -1,4 +1,4 @@
-import { UserRole, CourseType, LocationType, MediumType, InquiryStatus, FollowUpType, FollowUpStatus, FollowUpOutcome, FollowUpPriority, SalesLeadStage } from '@/types';
+import { UserRole, CourseType, LocationType, MediumType, InquiryStatus, FollowUpType, FollowUpStatus, FollowUpOutcome, SalesLeadStage } from '@/types';
 
 export const USER_ROLES: { value: UserRole; label: string }[] = [
   { value: 'user', label: 'User' },
@@ -79,12 +79,6 @@ export const FOLLOW_UP_OUTCOMES: { value: FollowUpOutcome; label: string; color:
   { value: 'needs_time', label: 'Needs Time', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
   { value: 'requested_info', label: 'Requested Info', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
   { value: 'scheduled_meeting', label: 'Scheduled Meeting', color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' },
-];
-
-export const FOLLOW_UP_PRIORITIES: { value: FollowUpPriority; label: string; color: string }[] = [
-  { value: 'low', label: 'Low', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
-  { value: 'high', label: 'High', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
 ];
 
 // Sales Lead Stages and Sub-Stages

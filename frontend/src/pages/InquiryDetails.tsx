@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from 'react-query';
 import { 
@@ -76,35 +76,64 @@ const InquiryDetails: React.FC = () => {
   );
 
   // Only assigned Sales user or Admin (for sales inquiries) can create/edit sales follow-ups
+  // But only after they have attended the inquiry (created at least one follow-up)
   const canAddSalesFollowUp = !!(
     user &&
     inquiry?.department === 'sales' &&
     getId(inquiry?.assignedTo) === user.id &&
-    (user.role === 'sales' || user.role === 'admin')
+    (user.role === 'sales' || user.role === 'admin') &&
+    // Check if the assigned user has created at least one follow-up (inquiry has been attended)
+    inquiry?.followUps && inquiry.followUps.some((fu: any) => getId(fu.createdBy) === user.id)
   );
 
   // Check if user can attend (claim) the inquiry
-  const canAttend = !!(
-    user &&
-    inquiry &&
-    !inquiry.assignedTo && // Inquiry is not assigned
-    (
-      (user.role === 'presales' && inquiry.department === 'presales') ||
-      (user.role === 'sales' && inquiry.department === 'sales') ||
-      user.role === 'admin'
-    ) &&
-    // For sales users and admin (for sales inquiries): Check if there's no pending follow-up for another inquiry
-    !((user.role === 'sales' || (user.role === 'admin' && inquiry.department === 'sales')) && (() => {
+  // For admin: only allow attending sales inquiries (not presales)
+  // Admin can attend sales inquiries even if there's a pending follow-up for another inquiry
+  const canAttend = useMemo(() => {
+    // Early return if data not loaded
+    if (!user || !inquiry) {
+      return false;
+    }
+    
+    // Inquiry must not be assigned - use getId helper to check if assignedTo has an ID
+    const assignedToId = getId(inquiry.assignedTo);
+    if (assignedToId) {
+      return false;
+    }
+    
+    // Check role and department match
+    const userRole = user.role;
+    const inquiryDepartment = inquiry.department;
+    
+    const isAdminViewingSales = userRole === 'admin' && inquiryDepartment === 'sales';
+    const isPresalesViewingPresales = userRole === 'presales' && inquiryDepartment === 'presales';
+    const isSalesViewingSales = userRole === 'sales' && inquiryDepartment === 'sales';
+    
+    const roleDepartmentMatch = isAdminViewingSales || isPresalesViewingPresales || isSalesViewingSales;
+    
+    if (!roleDepartmentMatch) {
+      return false;
+    }
+    
+    // For sales users: Check if there's no pending follow-up for another inquiry
+    // Admin can attend sales inquiries even if there's a pending follow-up (more flexibility)
+    if (userRole === 'sales') {
       const pendingInquiryId = localStorage.getItem('pendingSalesFollowUp');
-      return pendingInquiryId && pendingInquiryId !== inquiry._id;
-    })())
-  );
+      if (pendingInquiryId && pendingInquiryId !== inquiry._id) {
+        return false; // There's a pending follow-up for another inquiry
+      }
+    }
+    // Admin can always attend unassigned sales inquiries (no pending follow-up check)
+    
+    return true;
+  }, [user, inquiry, inquiry?.assignedTo, inquiry?.department, inquiry?._id]);
 
   const handleClaim = async () => {
     if (!inquiry || !id) return;
     
-    // For sales users and admin (for sales inquiries): Check if there's already a pending follow-up
-    if ((user?.role === 'sales' || (user?.role === 'admin' && inquiry.department === 'sales'))) {
+    // For sales users only: Check if there's already a pending follow-up
+    // Admin can attend even if there's a pending follow-up for another inquiry
+    if (user?.role === 'sales' && inquiry.department === 'sales') {
       const pendingInquiryId = localStorage.getItem('pendingSalesFollowUp');
       if (pendingInquiryId && pendingInquiryId !== id) {
         toast.error('Please complete the follow-up for the previously attended inquiry before attending a new one.');
@@ -254,13 +283,24 @@ const InquiryDetails: React.FC = () => {
     }
   }, [inquiry, user?.role, user?.id, id]);
 
-  const canForward = !!(user && inquiry && inquiry.department === 'presales' && getId(inquiry.assignedTo) === user.id);
+  // Forward to Sales button - only show for presales users (not admin)
+  const canForward = !!(
+    user && 
+    inquiry && 
+    inquiry.department === 'presales' && 
+    getId(inquiry.assignedTo) === user.id &&
+    user.role === 'presales' // Only presales users can forward, not admin
+  );
+  // Reassign to Sales User button should only show after the inquiry has been attended
+  // (assigned user has created at least one follow-up)
   const canReassignSales = !!(
     user && 
     inquiry && 
     inquiry.department === 'sales' && 
     getId(inquiry.assignedTo) === user.id &&
-    (user.role === 'sales' || user.role === 'admin')
+    (user.role === 'sales' || user.role === 'admin') &&
+    // Check if the assigned user has created at least one follow-up (inquiry has been attended)
+    inquiry.followUps && inquiry.followUps.some((fu: any) => getId(fu.createdBy) === user.id)
   );
 
   const handleForwardToSales = async () => {
@@ -830,7 +870,7 @@ const InquiryDetails: React.FC = () => {
           inquiryId={inquiry._id}
           followUp={editingFollowUp || undefined}
           onSuccess={handleSalesFollowUpSuccess}
-          isRequired={(user?.role === 'sales' || user?.role === 'admin') && id && inquiry.department === 'sales' && localStorage.getItem('pendingSalesFollowUp') === id && inquiry.assignedTo && getId(inquiry.assignedTo) === user.id}
+          isRequired={!!((user?.role === 'sales' || user?.role === 'admin') && id && inquiry.department === 'sales' && localStorage.getItem('pendingSalesFollowUp') === id && inquiry.assignedTo && getId(inquiry.assignedTo) === user.id)}
         />
       )}
 

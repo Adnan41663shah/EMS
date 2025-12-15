@@ -128,18 +128,6 @@ const SalesMyFollowUps: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'call':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
-      case 'email':
-        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
-      case 'whatsapp':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-    }
-  };
 
   if (isLoading) {
     return (
@@ -233,25 +221,25 @@ const SalesMyFollowUps: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Message
+                  <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Type
+                  <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Phone Number
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Lead Stage
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Created At
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Next Follow-up
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Inquiry
+                  <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Course
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-3 sm:px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Preferred Location
+                  </th>
+                  <th className="px-3 sm:px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -265,32 +253,21 @@ const SalesMyFollowUps: React.FC = () => {
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <Clock className="h-5 w-5 text-gray-400 mr-3 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {followUp.message || '-'}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Created: {followUp.createdAt ? new Date(followUp.createdAt).toLocaleString() : 'N/A'}
-                          </div>
-                        </div>
+                    <td className="px-3 sm:px-4 py-2 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {followUp.inquiry?.name || 'N/A'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={cn(
-                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                        getTypeColor(followUp.type)
-                      )}>
-                        {followUp.type}
-                      </span>
+                    <td className="px-3 sm:px-4 py-2 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {followUp.inquiry?.phone || 'N/A'}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-4 py-2 whitespace-nowrap">
                       {followUp.leadStage ? (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-0.5">
                           <span className={cn(
-                            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                            'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium w-fit',
                             followUp.leadStage === 'Hot' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
                             followUp.leadStage === 'Warm' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                             followUp.leadStage === 'Cold' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
@@ -302,64 +279,58 @@ const SalesMyFollowUps: React.FC = () => {
                             {followUp.leadStage}
                           </span>
                           {followUp.subStage && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                               {followUp.subStage}
-                            </span>
+                            </div>
                           )}
                         </div>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                           N/A
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        {followUp.createdAt ? new Date(followUp.createdAt).toLocaleDateString() : 'N/A'}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {followUp.createdAt ? new Date(followUp.createdAt).toLocaleTimeString() : 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-4 py-2 whitespace-nowrap">
                       {followUp.nextFollowUpDate ? (
-                        <>
+                        <div className="flex flex-col">
                           <div className="text-sm text-gray-900 dark:text-white">
                             {new Date(followUp.nextFollowUpDate).toLocaleDateString()}
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {new Date(followUp.nextFollowUpDate).toLocaleTimeString()}
+                            {new Date(followUp.nextFollowUpDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
-                        </>
+                        </div>
                       ) : (
                         <div className="text-sm text-gray-400 dark:text-gray-500 italic">
                           Not scheduled
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-4 py-2 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-white">
-                        {followUp.inquiry?.name || 'N/A'}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {followUp.inquiry?.course || ''} • {followUp.inquiry?.preferredLocation || ''}
+                        {followUp.inquiry?.course || 'N/A'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-3 sm:px-4 py-2 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {followUp.inquiry?.preferredLocation || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-1 sm:gap-2">
                         <button
                           onClick={() => handleViewInquiry(followUp.inquiry?._id)}
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          className="inline-flex items-center justify-center p-1.5 sm:p-2 text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          title="View Inquiry"
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View Inquiry
+                          <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                         <button
                           onClick={() => handleRemoveFollowUp(followUp._id)}
-                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          className="inline-flex items-center justify-center p-1.5 sm:p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Delete"
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Remove
+                          <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                       </div>
                     </td>

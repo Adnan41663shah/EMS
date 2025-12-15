@@ -7,7 +7,7 @@ import apiService from '@/services/api';
 import { Inquiry, InquiryFilters } from '@/types';
 import { cn } from '@/utils/cn';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { convertInquiriesToCSV, downloadCSV } from '@/utils/exportCSV';
+import { convertAdmittedStudentsToCSV, downloadCSV } from '@/utils/exportCSV';
 
 // Helper function to check if an inquiry is admitted
 const isAdmitted = (inquiry: Inquiry): boolean => {
@@ -135,28 +135,27 @@ const AdmittedStudents: React.FC = () => {
   };
 
   const handleExport = async () => {
-    if (admittedStudents.length === 0) {
+    if (finalFilteredStudents.length === 0) {
       return;
     }
 
     setIsExporting(true);
     try {
-      // Create CSV with admitted students data
-      const csvData = admittedStudents.map((inquiry: Inquiry) => ({
-        Name: inquiry.name,
-        Email: inquiry.email || '',
-        Phone: inquiry.phone,
-        Course: inquiry.course,
-        Center: inquiry.preferredLocation,
-        Counselor: getCounselorName(inquiry),
-        'Admission Date': getAdmissionDate(inquiry),
-        'Created Date': new Date(inquiry.createdAt).toLocaleDateString(),
+      // Create CSV data with only required columns
+      const csvData = finalFilteredStudents.map((inquiry: Inquiry) => ({
+        name: inquiry.name,
+        phone: inquiry.phone,
+        course: inquiry.course,
+        center: inquiry.preferredLocation,
+        admissionDate: getAdmissionDate(inquiry),
+        counselor: getCounselorName(inquiry),
       }));
 
-      const csv = convertInquiriesToCSV(csvData as any);
+      const csv = convertAdmittedStudentsToCSV(csvData);
       downloadCSV(csv, `admitted-students-${new Date().toISOString().split('T')[0]}.csv`);
     } catch (error) {
       console.error('Export error:', error);
+      alert('Failed to export admitted students. Please try again.');
     } finally {
       setIsExporting(false);
     }

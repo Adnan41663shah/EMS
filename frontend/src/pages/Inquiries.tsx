@@ -16,8 +16,6 @@ import { convertInquiriesToCSV, downloadCSV } from '@/utils/exportCSV';
 
 const Inquiries: React.FC = () => {
   const [filters, setFilters] = useState<InquiryFilters>({
-    page: 1,
-    limit: 10,
     search: '',
     status: undefined,
     course: undefined,
@@ -71,7 +69,6 @@ const Inquiries: React.FC = () => {
   const optStatuses: string[] = optionsData?.data?.statuses || ['hot', 'warm', 'cold'];
 
   const allInquiries = data?.data?.inquiries || [];
-  const pagination = data?.data?.pagination;
   
   // Helper function to check if an inquiry is admitted (Hot + Confirmed Admission)
   const isAdmitted = (inq: Inquiry): boolean => {
@@ -171,12 +168,11 @@ const Inquiries: React.FC = () => {
     setFilters(prev => ({
       ...prev,
       [key]: value,
-      page: 1, // Reset to first page when filters change
     }));
   };
 
   const clearFilter = (key: keyof InquiryFilters) => {
-    setFilters(prev => ({ ...prev, [key]: undefined, page: 1 }));
+    setFilters(prev => ({ ...prev, [key]: undefined }));
   };
 
   const clearAllFilters = () => {
@@ -188,7 +184,6 @@ const Inquiries: React.FC = () => {
       medium: undefined,
       dateFrom: undefined,
       dateTo: undefined,
-      page: 1,
     }));
   };
 
@@ -203,9 +198,6 @@ const Inquiries: React.FC = () => {
     return count;
   };
 
-  const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }));
-  };
 
   const getRowBg = (inq: Inquiry) => {
     // New/unattended inquiries (unassigned) show green background
@@ -271,11 +263,9 @@ const Inquiries: React.FC = () => {
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      // Build export filters (all filters except pagination)
+      // Build export filters
       const exportFilters: InquiryFilters = {
         ...filters,
-        page: 1,
-        limit: 10000, // Set high limit to get all records
       };
       
       // Fetch all inquiries matching the filters
@@ -613,14 +603,10 @@ const Inquiries: React.FC = () => {
       <div className="card">
         <div className="card-content border-5">
           {/* Results Count - Top Left */}
-          {pagination && (pagination.totalPages > 0 || inquiries.length > 0) && (
+          {inquiries.length > 0 && (
             <div className="pt-1 pb-2">
               <div className="text-sm text-gray-700 dark:text-gray-300">
-                {user?.role === 'sales' && attendanceFilter !== 'all' ? (
-                  <>Showing {inquiries.length} filtered results</>
-                ) : (
-                  <>Showing {inquiries.length} of {pagination.totalItems} results</>
-                )}
+                Showing {inquiries.length} {user?.role === 'sales' && attendanceFilter !== 'all' ? 'filtered ' : ''}results
               </div>
             </div>
           )}
@@ -743,6 +729,7 @@ const Inquiries: React.FC = () => {
                     )}
                     <td className="px-3 py-1 whitespace-nowrap text-right text-xs font-medium">
                       <div className="flex items-center justify-end gap-2">
+                        {/* Show Attend button for presales users viewing presales inquiries */}
                         {user?.role === 'presales' && inquiry.department === 'presales' ? (
                           !inquiry.assignedTo ? (
                             <button
@@ -786,32 +773,6 @@ const Inquiries: React.FC = () => {
           )}
         </div>
 
-        {/* Pagination - Right Side */}
-        {pagination && (pagination.totalPages > 0 || inquiries.length > 0) && (
-          <div className="card-footer">
-            <div className="flex items-center justify-end my-2">
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={!pagination.hasPrev}
-                  className="btn btn-outline btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <span className="flex items-center px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
-                  Page {pagination.currentPage} of {pagination.totalPages || 1}
-                </span>
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={!pagination.hasNext}
-                  className="btn btn-outline btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Create Inquiry Modal */}

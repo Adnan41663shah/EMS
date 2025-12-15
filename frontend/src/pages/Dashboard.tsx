@@ -9,7 +9,10 @@ import {
   Activity,
   BarChart3,
   Download,
-  Filter
+  Filter,
+  Database,
+  Upload,
+  GraduationCap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,16 +21,17 @@ import { DashboardStats, Inquiry } from '@/types';
 import { cn } from '@/utils/cn';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import UserDashboard from '@/components/UserDashboard';
+import DataTab from '@/components/DataTab';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { convertInquiriesToCSV, downloadCSV } from '@/utils/exportCSV';
 
-type TabType = 'overview' | 'analytics' | 'reports';
+type TabType = 'overview' | 'analytics' | 'reports' | 'data';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
-  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('all');
 
   const { data, isLoading, error } = useQuery(
     'dashboard-stats',
@@ -74,6 +78,13 @@ const Dashboard: React.FC = () => {
       setStats(data.data);
     }
   }, [data]);
+
+  // Reset activeTab to 'overview' if sales or presales user somehow gets to analytics/reports tab
+  useEffect(() => {
+    if ((user?.role === 'sales' || user?.role === 'presales') && (activeTab === 'analytics' || activeTab === 'reports')) {
+      setActiveTab('overview');
+    }
+  }, [user?.role, activeTab]);
 
   // Process data for charts - must be before early returns
   const inquiries: Inquiry[] = allInquiriesData?.data?.inquiries || [];
@@ -132,31 +143,51 @@ const Dashboard: React.FC = () => {
 
   // Time-based data (inquiries over time)
   const timeSeriesData = useMemo(() => {
+    if (inquiries.length === 0) return [];
+    
     const daysMap: Record<string, number> = {};
-    const today = new Date();
-    const days = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : dateRange === '90d' ? 90 : 30;
     
-    // Initialize all days
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      daysMap[dateStr] = 0;
-    }
-    
-    // Count inquiries per day
-    inquiries.forEach(inq => {
-      const dateStr = new Date(inq.createdAt).toISOString().split('T')[0];
-      if (daysMap.hasOwnProperty(dateStr)) {
-        daysMap[dateStr]++;
+    if (dateRange === 'all') {
+      // For 'all time', group by actual dates from the data
+      inquiries.forEach(inq => {
+        const dateStr = new Date(inq.createdAt).toISOString().split('T')[0];
+        daysMap[dateStr] = (daysMap[dateStr] || 0) + 1;
+      });
+      
+      // Sort by date and return
+      return Object.entries(daysMap)
+        .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+        .map(([date, count]) => ({
+          date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          inquiries: count
+        }));
+    } else {
+      // For specific ranges, initialize all days first
+      const today = new Date();
+      const days = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
+      
+      // Initialize all days
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        daysMap[dateStr] = 0;
       }
-    });
-    
-    return Object.entries(daysMap)
-      .map(([date, count]) => ({
-        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        inquiries: count
-      }));
+      
+      // Count inquiries per day
+      inquiries.forEach(inq => {
+        const dateStr = new Date(inq.createdAt).toISOString().split('T')[0];
+        if (daysMap.hasOwnProperty(dateStr)) {
+          daysMap[dateStr]++;
+        }
+      });
+      
+      return Object.entries(daysMap)
+        .map(([date, count]) => ({
+          date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          inquiries: count
+        }));
+    }
   }, [inquiries, dateRange]);
 
   const COLORS = ['#3b82f6', '#ef4444', '#eab308', '#6b7280', '#10b981', '#8b5cf6'];
@@ -167,50 +198,94 @@ const Dashboard: React.FC = () => {
     downloadCSV(csv, `inquiry-report-${dateRange}-${new Date().toISOString().split('T')[0]}.csv`);
   };
 
-  const tabs = [
-    { id: 'overview' as TabType, label: 'Overview', icon: Activity },
-    { id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 },
-    { id: 'reports' as TabType, label: 'Reports', icon: FileText },
-  ];
+  // Filter tabs based on user role - sales and presales users don't see analytics/reports/data
+  const tabs = useMemo(() => {
+    const allTabs = [
+      { id: 'overview' as TabType, label: 'Overview', icon: Activity },
+      { id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 },
+      { id: 'reports' as TabType, label: 'Reports', icon: FileText },
+      { id: 'data' as TabType, label: 'Data', icon: Database },
+    ];
+    
+    // For sales and presales roles, only show overview tab
+    if (user?.role === 'sales' || user?.role === 'presales') {
+      return allTabs.filter(tab => tab.id === 'overview');
+    }
+    
+    return allTabs;
+  }, [user?.role]);
 
-  const statCards = [
-    {
-      title: 'Total Inquiries',
-      value: stats?.totalInquiries || 0,
-      icon: FileText,
-      color: 'bg-blue-500',
-    },
-    {
-      title: 'Hot Inquiries',
-      value: stats?.hotInquiries || 0,
-      icon: AlertCircle,
-      color: 'bg-red-500',
-    },
-    {
-      title: 'Warm Inquiries',
-      value: stats?.warmInquiries || 0,
-      icon: Clock,
-      color: 'bg-yellow-500',
-    },
-    {
-      title: 'Cold Inquiries',
-      value: stats?.coldInquiries || 0,
-      icon: XCircle,
-      color: 'bg-gray-500',
-    },
-    {
-      title: 'My Raised Inquiries',
-      value: stats?.myInquiries || 0,
-      icon: Users,
-      color: 'bg-green-500',
-    },
-    {
-      title: 'My Attended Inquiries',
-      value: stats?.assignedInquiries || 0,
-      icon: Activity,
-      color: 'bg-purple-500',
-    },
-  ];
+  // Stat cards - different for admin vs other roles
+  const statCards = useMemo(() => {
+    if (user?.role === 'admin') {
+      return [
+        {
+          title: 'Total Inquiries',
+          value: stats?.totalInquiries || 0,
+          icon: FileText,
+          color: 'bg-blue-500',
+        },
+        {
+          title: 'Presales Inquiries',
+          value: stats?.presalesInquiries || 0,
+          icon: Users,
+          color: 'bg-green-500',
+        },
+        {
+          title: 'Sales Inquiries',
+          value: stats?.salesInquiries || 0,
+          icon: Activity,
+          color: 'bg-purple-500',
+        },
+        {
+          title: 'Admitted Students',
+          value: stats?.admittedStudents || 0,
+          icon: GraduationCap,
+          color: 'bg-orange-500',
+        },
+      ];
+    } else {
+      // For non-admin roles, keep the original stats
+      return [
+        {
+          title: 'Total Inquiries',
+          value: stats?.totalInquiries || 0,
+          icon: FileText,
+          color: 'bg-blue-500',
+        },
+        {
+          title: 'Hot Inquiries',
+          value: stats?.hotInquiries || 0,
+          icon: AlertCircle,
+          color: 'bg-red-500',
+        },
+        {
+          title: 'Warm Inquiries',
+          value: stats?.warmInquiries || 0,
+          icon: Clock,
+          color: 'bg-yellow-500',
+        },
+        {
+          title: 'Cold Inquiries',
+          value: stats?.coldInquiries || 0,
+          icon: XCircle,
+          color: 'bg-gray-500',
+        },
+        {
+          title: 'My Raised Inquiries',
+          value: stats?.myInquiries || 0,
+          icon: Users,
+          color: 'bg-green-500',
+        },
+        {
+          title: 'My Attended Inquiries',
+          value: stats?.assignedInquiries || 0,
+          icon: Activity,
+          color: 'bg-purple-500',
+        },
+      ];
+    }
+  }, [user?.role, stats]);
 
   // Show user-specific dashboard for regular users - AFTER all hooks
   if (user?.role === 'user') {
@@ -251,7 +326,7 @@ const Dashboard: React.FC = () => {
           Welcome back! Here's what's happening with your inquiries.
         </p>
         </div>
-        {activeTab === 'analytics' && user?.role === 'admin' && (
+        {((activeTab === 'analytics' || activeTab === 'reports') && user?.role === 'admin') && (
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-gray-500" />
             <select
@@ -635,6 +710,7 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
+      {/* Analytics and Reports are only available for admin */}
       {activeTab === 'analytics' && user?.role !== 'admin' && (
         <div className="card">
           <div className="card-content text-center py-12">
@@ -662,6 +738,8 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {activeTab === 'data' && user?.role === 'admin' && <DataTab />}
     </div>
   );
 };

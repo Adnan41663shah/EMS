@@ -8,10 +8,11 @@ class ApiService {
   constructor() {
     this.api = axios.create({
       baseURL: '/api',
-      timeout: 10000,
+      timeout: 60000, // Increased timeout for file uploads
       headers: {
         'Content-Type': 'application/json',
       },
+      withCredentials: true,
     });
 
     this.setupInterceptors();
@@ -21,7 +22,7 @@ class ApiService {
     // Request interceptor to add auth token
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -44,8 +45,8 @@ class ApiService {
         if (error.response?.status === 401) {
           // Token expired or invalid
           if (!isAuthRequest) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
             window.location.href = '/login';
             toast.error('Session expired. Please login again.');
           }
@@ -181,6 +182,25 @@ class ApiService {
   options = {
     get: () => this.request('GET', '/options'),
     update: (data: { courses?: string[]; locations?: string[]; statuses?: string[]; leadStages?: Array<{ label: string; subStages: string[] }> }) => this.request('PUT', '/options', data),
+  };
+
+  // Student endpoints (admin only)
+  students = {
+    import: (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return this.api.post('/students/import', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 300000, // 5 minutes for large file uploads
+        withCredentials: true,
+      }).then(response => response.data);
+    },
+    getAll: (params?: any) =>
+      this.request('GET', '/students', undefined, { params }),
+    deleteAll: () =>
+      this.request('DELETE', '/students/all'),
   };
 
 }

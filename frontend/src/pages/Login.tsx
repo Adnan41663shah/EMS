@@ -106,11 +106,21 @@ const Login: React.FC = () => {
                 {...register('email', {
                   required: 'Email is required',
                   pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address',
+                    value: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+                    message: 'Please enter a valid email address',
+                  },
+                  validate: {
+                    noSpaces: (value) => !/\s/.test(value) || 'Email cannot contain spaces',
+                    validDomain: (value) => {
+                      const domain = value.split('@')[1];
+                      if (!domain) return 'Invalid email format';
+                      if (domain.length < 3) return 'Invalid email domain';
+                      if (!domain.includes('.')) return 'Invalid email domain';
+                      return true;
+                    },
                   },
                 })}
-                type="text"
+                type="email"
                 autoComplete="email"
                 className={cn(
                   'w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent transition-all',

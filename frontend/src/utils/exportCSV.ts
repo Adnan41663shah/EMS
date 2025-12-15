@@ -46,7 +46,7 @@ export const convertInquiriesToCSV = (inquiries: Inquiry[]): string => {
     return [
       escapeCSVField(inquiry.name),
       escapeCSVField(inquiry.email),
-      escapeCSVField(inquiry.phone),
+      formatPhoneNumber(inquiry.phone), // Use formatted phone number to prevent scientific notation
       escapeCSVField(inquiry.city),
       escapeCSVField(inquiry.education),
       escapeCSVField(inquiry.course),
@@ -74,10 +74,10 @@ export const convertInquiriesToCSV = (inquiries: Inquiry[]): string => {
 
 /**
  * Formats phone number to prevent Excel from converting it to scientific notation
- * Ensures phone number is always treated as text
+ * Ensures phone number is always treated as text and formatted correctly
  */
 const formatPhoneNumber = (phone: string | number | null | undefined): string => {
-  if (phone === null || phone === undefined) return '';
+  if (phone === null || phone === undefined || phone === '') return '';
   
   // Handle both string and number types
   let phoneStr: string;
@@ -86,32 +86,64 @@ const formatPhoneNumber = (phone: string | number | null | undefined): string =>
     // For large numbers, use toFixed(0) to avoid scientific notation
     phoneStr = phone.toFixed(0);
   } else {
-    phoneStr = String(phone);
+    phoneStr = String(phone).trim();
     
-    // If it's already in scientific notation string format, convert it back
+    // If it's already in scientific notation string format (like "9.19847E+11"), convert it back
     if (phoneStr.includes('E+') || phoneStr.includes('e+') || phoneStr.includes('E-') || phoneStr.includes('e-')) {
       const num = parseFloat(phoneStr);
-      phoneStr = num.toFixed(0);
+      if (!isNaN(num)) {
+        phoneStr = num.toFixed(0);
+      }
     }
   }
   
   // Extract only digits (and + for country codes)
   const digits = phoneStr.replace(/[^\d+]/g, '');
   
-  // Format Indian phone numbers (10 digits) or with country code
-  if (digits.length === 10) {
-    // Format as: 12345 67890 (with space to ensure Excel treats as text)
-    return `"${digits.slice(0, 5)} ${digits.slice(5)}"`;
-  } else if (digits.length > 10 && digits.length <= 13) {
-    // Format with country code: 91 12345 67890
-    const countryCode = digits.slice(0, digits.length - 10);
-    const number = digits.slice(digits.length - 10);
-    return `"${countryCode} ${number.slice(0, 5)} ${number.slice(5)}"`;
+  if (!digits || digits.length === 0) return '';
+  
+  // Format phone numbers with country code and 10 digits
+  // Expected format: +[country code][10 digits] or [country code][10 digits]
+  let countryCode = '';
+  let number = '';
+  
+  // Check if it starts with +
+  if (digits.startsWith('+')) {
+    // Format: +[country code][10 digits]
+    const withoutPlus = digits.substring(1);
+    if (withoutPlus.length >= 10) {
+      countryCode = withoutPlus.slice(0, withoutPlus.length - 10);
+      number = withoutPlus.slice(withoutPlus.length - 10);
+    } else {
+      // Less than 10 digits, treat all as number
+      number = withoutPlus;
+    }
+  } else {
+    // Format: [country code][10 digits] or just [10 digits]
+    if (digits.length === 10) {
+      // Just 10 digits, no country code
+      number = digits;
+    } else if (digits.length > 10 && digits.length <= 13) {
+      // Has country code
+      countryCode = digits.slice(0, digits.length - 10);
+      number = digits.slice(digits.length - 10);
+    } else {
+      // Other format, return as-is
+      number = digits;
+    }
   }
   
-  // For other formats, return as-is but ensure it's quoted with a space prefix
-  // The space ensures Excel treats it as text
-  return `" ${digits}"`;
+  // Format the number: country code + space + 5 digits + space + 5 digits
+  // The spaces and quotes ensure Excel treats it as text
+  if (countryCode && number.length === 10) {
+    return `"${countryCode} ${number.slice(0, 5)} ${number.slice(5)}"`;
+  } else if (number.length === 10) {
+    return `"${number.slice(0, 5)} ${number.slice(5)}"`;
+  } else {
+    // For other formats, prefix with space and quote to ensure Excel treats as text
+    const fullNumber = countryCode ? `${countryCode}${number}` : number;
+    return `" ${fullNumber}"`;
+  }
 };
 
 /**
@@ -150,6 +182,53 @@ export const convertInquiriesToCSVForSales = (inquiries: Inquiry[]): string => {
       escapeCSVField(inquiry.status),
       escapeCSVField(inquiry.createdBy?.name || 'Unknown'),
       escapeCSVField(new Date(inquiry.createdAt).toLocaleDateString())
+    ];
+  });
+
+  // Combine headers and rows
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.join(','))
+  ].join('\n');
+
+  return csvContent;
+};
+
+/**
+ * Converts admitted students data to CSV format
+ * Columns: Name, Mobile, Course, Center, Admission Date, Counselor
+ */
+export const convertAdmittedStudentsToCSV = (students: Array<{
+  name: string;
+  phone: string;
+  course: string;
+  center: string;
+  admissionDate: string;
+  counselor: string;
+}>): string => {
+  if (students.length === 0) {
+    return '';
+  }
+
+  // CSV Headers
+  const headers = [
+    'Name',
+    'Mobile',
+    'Course',
+    'Center',
+    'Admission Date',
+    'Counselor'
+  ];
+
+  // Create CSV rows
+  const rows = students.map((student) => {
+    return [
+      escapeCSVField(student.name),
+      formatPhoneNumber(student.phone), // Use formatted phone number
+      escapeCSVField(student.course),
+      escapeCSVField(student.center),
+      escapeCSVField(student.admissionDate),
+      escapeCSVField(student.counselor)
     ];
   });
 

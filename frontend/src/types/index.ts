@@ -46,8 +46,6 @@ export type FollowUpStatus = 'completed' | 'cancelled' | 'rescheduled' | 'no_ans
 
 export type FollowUpOutcome = 'positive' | 'neutral' | 'negative' | 'interested' | 'not_interested' | 'needs_time' | 'requested_info' | 'scheduled_meeting';
 
-export type FollowUpPriority = 'low' | 'medium' | 'high';
-
 export interface FollowUp {
   _id: string;
   type: FollowUpType;
@@ -108,6 +106,9 @@ export interface DashboardStats {
   coldInquiries: number;
   myInquiries: number;
   assignedInquiries: number;
+  presalesInquiries: number;
+  salesInquiries: number;
+  admittedStudents: number;
   recentInquiries: Inquiry[];
 }
 
@@ -162,4 +163,20 @@ export interface FormField {
     minLength?: { value: number; message: string };
     pattern?: { value: RegExp; message: string };
   };
+}
+
+export interface Student {
+  _id: string;
+  studentName: string;
+  mobileNumber: string;
+  email: string;
+  course: string;
+  center: string;
+  status: string;
+  attendedBy: string;
+  createdBy: string;
+  attendedAt: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
 }

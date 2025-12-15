@@ -77,23 +77,33 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Check for existing token on mount
+  // Check for existing token on mount and fetch full user profile
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const token = sessionStorage.getItem('token');
 
-    if (token && user) {
-      try {
-        const parsedUser = JSON.parse(user);
-        dispatch({
-          type: 'LOGIN_SUCCESS',
-          payload: { user: parsedUser, token },
+    if (token) {
+      // Fetch full user profile from API
+      apiService.auth.getProfile()
+        .then((response) => {
+          if (response.success && response.data?.user) {
+            const fullUser = response.data.user;
+            dispatch({
+              type: 'LOGIN_SUCCESS',
+              payload: { user: fullUser, token },
+            });
+            // Store only id and name in sessionStorage
+            sessionStorage.setItem('user', JSON.stringify({ id: fullUser.id || fullUser._id, name: fullUser.name }));
+          } else {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            dispatch({ type: 'LOGIN_FAILURE' });
+          }
+        })
+        .catch(() => {
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('user');
+          dispatch({ type: 'SET_LOADING', payload: false });
         });
-      } catch (error) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        dispatch({ type: 'LOGIN_FAILURE' });
-      }
     } else {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -108,8 +118,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.success && response.data) {
         const { user, token } = response.data;
         
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        // Store token and only id/name in sessionStorage
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('user', JSON.stringify({ id: user.id || user._id, name: user.name }));
         
         dispatch({
           type: 'LOGIN_SUCCESS',
@@ -147,8 +158,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.success && response.data) {
         const { user, token } = response.data;
         
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        // Store token and only id/name in sessionStorage
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('user', JSON.stringify({ id: user.id || user._id, name: user.name }));
         
         dispatch({
           type: 'LOGIN_SUCCESS',
@@ -166,8 +178,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     dispatch({ type: 'LOGOUT' });
     toast.success('Logged out successfully');
   };
@@ -175,7 +187,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const updateUser = (userData: Partial<User>) => {
     if (state.user) {
       const updatedUser = { ...state.user, ...userData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      // Store only id and name in sessionStorage
+      sessionStorage.setItem('user', JSON.stringify({ id: updatedUser.id || (updatedUser as any)._id, name: updatedUser.name }));
       dispatch({ type: 'UPDATE_USER', payload: updatedUser });
     }
   };
