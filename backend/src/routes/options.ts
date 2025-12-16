@@ -10,4 +10,3 @@ router.put('/', authenticate, authorize('admin'), updateOptions);
 
 export default router;
 
-

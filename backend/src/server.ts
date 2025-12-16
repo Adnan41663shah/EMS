@@ -37,7 +37,7 @@ const generalLimiter = rateLimit({
     ? parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000') // 1 minute in production
     : 60 * 1000, // 1 minute in dev
   max: isProduction
-    ? parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000') // 1000 requests per minute
+    ? parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '10000') // 10000 requests per minute
     : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '10000'), // 10000 in dev
   message: {
     success: false,

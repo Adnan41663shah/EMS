@@ -1,7 +1,6 @@
 import { UserRole, CourseType, LocationType, MediumType, InquiryStatus, FollowUpType, FollowUpStatus, FollowUpOutcome, SalesLeadStage } from '@/types';
 
 export const USER_ROLES: { value: UserRole; label: string }[] = [
-  { value: 'user', label: 'User' },
   { value: 'presales', label: 'Presales' },
   { value: 'sales', label: 'Sales' },
   { value: 'admin', label: 'Admin' },
@@ -9,7 +8,6 @@ export const USER_ROLES: { value: UserRole; label: string }[] = [
 
 // Roles available for signup (excluding admin)
 export const SIGNUP_ROLES: { value: UserRole; label: string }[] = [
-  { value: 'user', label: 'User' },
   { value: 'presales', label: 'Presales' },
   { value: 'sales', label: 'Sales' },
 ];
@@ -150,5 +148,4 @@ export const SALES_LEAD_STAGES: { value: SalesLeadStage; label: string; subStage
     ]
   }
 ];
-
 

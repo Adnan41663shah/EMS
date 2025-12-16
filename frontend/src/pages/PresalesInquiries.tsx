@@ -1,15 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { Search, FileText, Eye, Download, Filter, X, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
 import apiService from '@/services/api';
-import { useQuery as useRQ } from 'react-query';
 import { Inquiry, InquiryFilters, InquiryStatus } from '@/types';
 import { getStatusColor, getStatusLabel } from '@/utils/constants';
 import { cn } from '@/utils/cn';
-import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { convertInquiriesToCSV, downloadCSV } from '@/utils/exportCSV';
 
@@ -26,8 +23,6 @@ const PresalesInquiries: React.FC = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   // Close filter dropdown when clicking outside
@@ -58,7 +53,7 @@ const PresalesInquiries: React.FC = () => {
   );
 
   // Dynamic options (courses, locations, statuses)
-  const { data: optionsData } = useRQ('options', () => apiService.options.get(), { staleTime: 5 * 60 * 1000 });
+  const { data: optionsData } = useQuery('options', () => apiService.options.get(), { staleTime: 5 * 60 * 1000 });
   const optCourses: string[] = optionsData?.data?.courses || ['CDEC', 'X-DSAAI', 'DevOps', 'Full-Stack', 'Any'];
   const optLocations: string[] = optionsData?.data?.locations || ['Nagpur', 'Pune', 'Nashik', 'Indore'];
   const optStatuses: string[] = optionsData?.data?.statuses || ['hot', 'warm', 'cold'];

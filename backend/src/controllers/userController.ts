@@ -74,8 +74,7 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
       success: false,
       message: 'Server error while fetching users'
     });
-     return;
- }
+  }
 };
 
 export const getUserById = async (req: Request, res: Response) => {
@@ -101,8 +100,7 @@ export const getUserById = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while fetching user'
     });
-     return;
- }
+  }
 };
 
 export const createUser = async (req: Request, res: Response) => {
@@ -123,7 +121,7 @@ export const createUser = async (req: Request, res: Response) => {
       name,
       email,
       password,
-      role: role || 'user',
+      role: role || 'presales',
       isActive: isActive !== undefined ? isActive : true
     };
     
@@ -148,8 +146,7 @@ export const createUser = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while creating user'
     });
-     return;
- }
+  }
 };
 
 export const updateUser = async (req: Request, res: Response) => {
@@ -226,8 +223,7 @@ export const updateUser = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while updating user'
     });
-     return;
- }
+  }
 };
 
 export const deleteUser = async (req: Request, res: Response)=> {
@@ -272,8 +268,7 @@ export const deleteUser = async (req: Request, res: Response)=> {
       success: false,
       message: 'Server error while deleting user'
     });
-     return;
- }
+  }
 };
 
 export const toggleUserStatus = async (req: Request, res: Response) => {
@@ -320,6 +315,5 @@ export const toggleUserStatus = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while toggling user status'
     });
-     return;
- }
+  }
 };

@@ -138,7 +138,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
       // Set default status based on user role
       const inquiryData = {
         ...data,
-        status: data.status || (user?.role === 'user' ? 'warm' : 'warm') as InquiryStatus
+        status: data.status || 'warm' as InquiryStatus
       };
       
       await apiService.inquiries.create(inquiryData);
@@ -343,8 +343,8 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateInquirySubmit}
-        hideStatus={user?.role === 'user'}
-        onMoveToUnattended={(user?.role === 'sales' || user?.role === 'presales' || user?.role === 'admin') ? handleMoveToUnattended : undefined}
+        hideStatus={false}
+        onMoveToUnattended={handleMoveToUnattended}
       />
     </header>
   );

@@ -11,7 +11,6 @@ import {
   Download,
   Filter,
   Database,
-  Upload,
   GraduationCap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -20,7 +19,6 @@ import apiService from '@/services/api';
 import { DashboardStats, Inquiry } from '@/types';
 import { cn } from '@/utils/cn';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import UserDashboard from '@/components/UserDashboard';
 import DataTab from '@/components/DataTab';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { convertInquiriesToCSV, downloadCSV } from '@/utils/exportCSV';
@@ -39,7 +37,6 @@ const Dashboard: React.FC = () => {
     {
       refetchInterval: 60000,
       refetchOnWindowFocus: false,
-      enabled: user?.role !== 'user',
     }
   );
 
@@ -81,7 +78,7 @@ const Dashboard: React.FC = () => {
 
   // Reset activeTab to 'overview' if sales or presales user somehow gets to analytics/reports tab
   useEffect(() => {
-    if ((user?.role === 'sales' || user?.role === 'presales') && (activeTab === 'analytics' || activeTab === 'reports')) {
+    if (user?.role !== 'admin' && (activeTab === 'analytics' || activeTab === 'reports')) {
       setActiveTab('overview');
     }
   }, [user?.role, activeTab]);
@@ -207,8 +204,8 @@ const Dashboard: React.FC = () => {
       { id: 'data' as TabType, label: 'Data', icon: Database },
     ];
     
-    // For sales and presales roles, only show overview tab
-    if (user?.role === 'sales' || user?.role === 'presales') {
+    // For non-admin roles, only show overview tab
+    if (user?.role !== 'admin') {
       return allTabs.filter(tab => tab.id === 'overview');
     }
     
@@ -286,11 +283,6 @@ const Dashboard: React.FC = () => {
       ];
     }
   }, [user?.role, stats]);
-
-  // Show user-specific dashboard for regular users - AFTER all hooks
-  if (user?.role === 'user') {
-    return <UserDashboard />;
-  }
 
   if (isLoading) {
     return (

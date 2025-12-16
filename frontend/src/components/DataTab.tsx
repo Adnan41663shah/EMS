@@ -83,7 +83,7 @@ const DataTab: React.FC = () => {
     setPage(1);
   };
 
-  const formatValue = (value: string | null | undefined, isDate: boolean = false): string => {
+  const formatValue = (value: string | null | undefined, _isDate: boolean = false): string => {
     // Simple: just return the value as-is, no conversions
     if (value === null || value === undefined || value === '' || value === '-') {
       return '-';

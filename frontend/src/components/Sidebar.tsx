@@ -68,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen, onMobileMenuClose }
       label: 'Dashboard',
       href: '/dashboard',
       icon: Home,
-      roles: ['user', 'presales', 'sales', 'admin'],
+      roles: ['presales', 'sales', 'admin'],
     },
     {
       label: 'All Inquiries',
@@ -116,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen, onMobileMenuClose }
       label: 'My Raised Inquiries',
       href: '/my-inquiries',
       icon: User,
-      roles: ['user', 'presales', 'sales'],
+      roles: ['presales', 'sales'],
     },
     {
       label: 'My Attended Inquiries',

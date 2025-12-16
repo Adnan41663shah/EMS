@@ -43,7 +43,7 @@ export const register = async (req: Request, res: Response) => {
       name,
       email,
       password,
-      role: role || 'user'
+      role: role || 'presales'
     };
     
     if (phone && phone.trim() !== '') {

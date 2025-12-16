@@ -23,7 +23,7 @@ declare global {
   }
 }
 
-export type UserRole = 'user' | 'presales' | 'sales' | 'admin';
+export type UserRole = 'presales' | 'sales' | 'admin';
 
 export interface IInquiry extends Document {
   _id: string;

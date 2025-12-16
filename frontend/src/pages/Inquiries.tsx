@@ -5,7 +5,6 @@ import { Plus, Search, FileText, Eye, Filter, X, ChevronDown } from 'lucide-reac
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
-import { useQuery as useRQ } from 'react-query';
 import { Inquiry, InquiryFilters, CourseType, LocationType, MediumType, InquiryStatus } from '@/types';
 import { getStatusColor, getStatusLabel } from '@/utils/constants';
 import { cn } from '@/utils/cn';
@@ -61,7 +60,7 @@ const Inquiries: React.FC = () => {
   );
 
   // Dynamic options (courses, locations, statuses)
-  const { data: optionsData } = useRQ('options', () => apiService.options.get(), { staleTime: 5 * 60 * 1000 });
+  const { data: optionsData } = useQuery('options', () => apiService.options.get(), { staleTime: 5 * 60 * 1000 });
   const optCourses: string[] = optionsData?.data?.courses || ['CDEC', 'X-DSAAI', 'DevOps', 'Full-Stack', 'Any'];
   const optLocations: string[] = optionsData?.data?.locations || ['Nagpur', 'Pune', 'Nashik', 'Indore'];
   const optStatuses: string[] = optionsData?.data?.statuses || ['hot', 'warm', 'cold'];
@@ -581,7 +580,7 @@ const Inquiries: React.FC = () => {
                       Attended By
                     </th>
                   )}
-                  {(user?.role === 'admin' || user?.role === 'user') && (
+                  {user?.role === 'admin' && (
                     <>
                       <th className="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Assigned To
@@ -613,7 +612,7 @@ const Inquiries: React.FC = () => {
                         <div className="text-xs font-medium text-gray-900 dark:text-white">
                           {inquiry.name}
                         </div>
-                        {(user?.role === 'admin' || user?.role === 'user') && (
+                        {user?.role === 'admin' && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             {inquiry.email}
                           </div>
@@ -652,7 +651,7 @@ const Inquiries: React.FC = () => {
                         </div>
                       </td>
                     )}
-                    {(user?.role === 'admin' || user?.role === 'user') && (
+                    {user?.role === 'admin' && (
                       <>
                         <td className="px-3 py-1 whitespace-nowrap">
                           <div className="text-xs text-gray-900 dark:text-white">

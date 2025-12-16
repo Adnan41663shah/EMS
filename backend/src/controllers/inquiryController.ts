@@ -108,10 +108,7 @@ export const getInquiries = async (req: Request, res: Response) => {
       query.createdBy = userId;
     } else {
       // Role-based filtering
-      if (userRole === 'user') {
-        // Users can only see inquiries they created
-        query.createdBy = userId;
-      } else if (userRole === 'presales') {
+      if (userRole === 'presales') {
         // Presales can see all inquiries in Presales department (assigned or unassigned)
         // But exclude inquiries they forwarded to sales (those appear in "My Attended Inquiries")
         query.$and = [
@@ -358,8 +355,7 @@ export const getInquiries = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while fetching inquiries'
     });
-     return;
- }
+  }
 };
 
 export const getInquiryById = async (req: Request, res: Response) => {
@@ -382,7 +378,6 @@ export const getInquiryById = async (req: Request, res: Response) => {
     const assignedToId = typeof inquiry.assignedTo === 'string' ? inquiry.assignedTo : inquiry.assignedTo?._id;
     
     // Presales and admin can see all inquiries
-    // Users can only see inquiries they created
     // Sales can see:
     // 1. Inquiries assigned to them
     // 2. Inquiries they created
@@ -391,7 +386,6 @@ export const getInquiryById = async (req: Request, res: Response) => {
     const canAccess = 
       userRole === 'admin' ||
       userRole === 'presales' ||
-      (userRole === 'user' && createdById.toString() === req.user?._id?.toString()) ||
       (userRole === 'sales' && (
         assignedToId?.toString() === req.user?._id?.toString() || 
         createdById.toString() === req.user?._id?.toString() ||
@@ -466,8 +460,7 @@ export const updateInquiry = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while updating inquiry'
     });
-     return;
- }
+  }
 };
 
 export const deleteInquiry = async (req: Request, res: Response) => {
@@ -507,8 +500,7 @@ export const deleteInquiry = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while deleting inquiry'
     });
-     return;
- }
+  }
 };
 
 export const assignInquiry = async (req: Request, res: Response) => {
@@ -565,8 +557,7 @@ export const assignInquiry = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while assigning inquiry'
     });
-     return;
- }
+  }
 };
 
 export const claimInquiry = async (req: Request, res: Response) => {
@@ -892,8 +883,7 @@ export const addFollowUp = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while adding follow-up'
     });
-     return;
- }
+  }
 };
 
 export const updateFollowUp = async (req: Request, res: Response) => {
@@ -999,8 +989,7 @@ export const updateFollowUp = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while updating follow-up'
     });
-     return;
- }
+  }
 };
 
 export const deleteFollowUp = async (req: Request, res: Response) => {
@@ -1061,8 +1050,7 @@ export const deleteFollowUp = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while deleting follow-up'
     });
-     return;
-}
+  }
 };
 
 export const getMyFollowUps = async (req: Request, res: Response) => {
@@ -1195,10 +1183,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     let myInquiriesQuery: any = {};
 
     // Role-based queries
-    if (userRole === 'user') {
-      query.createdBy = userId;
-      myInquiriesQuery.createdBy = userId;
-    } else if (userRole === 'presales') {
+    if (userRole === 'presales') {
       // Presales can see all inquiries in Presales department (assigned or unassigned)
       // This matches the logic in getInquiries function
       query.department = 'presales';
@@ -1224,14 +1209,12 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     // For "My Attended Inquiries", count inquiries that are:
     // 1. Currently assigned to the user, OR
     // 2. Forwarded by the user (even if forwarded to sales)
-    const attendedInquiriesQuery = userRole !== 'user' 
-      ? { 
-          $or: [
-            { assignedTo: userId },
-            { forwardedBy: userId }
-          ]
-        }
-      : { assignedTo: userId };
+    const attendedInquiriesQuery = { 
+      $or: [
+        { assignedTo: userId },
+        { forwardedBy: userId }
+      ]
+    };
 
     // Fetch all inquiries with followUps to filter out admitted students
     const [
@@ -1247,7 +1230,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       // Get my inquiries for filtering
       Inquiry.find(myInquiriesQuery).select('followUps').lean(),
       // Get attended inquiries for filtering
-      userRole !== 'user' ? Inquiry.find(attendedInquiriesQuery).select('followUps').lean() : [],
+      Inquiry.find(attendedInquiriesQuery).select('followUps').lean(),
       // Get presales inquiries for filtering
       Inquiry.find({ department: 'presales' }).select('followUps').lean(),
       // Get sales inquiries for filtering
@@ -1321,8 +1304,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while fetching dashboard stats'
     });
-     return;
- }
+  }
 };
 
 export const checkPhoneExists = async (req: Request, res: Response) => {
@@ -1549,6 +1531,5 @@ export const getUnattendedInquiryCounts = async (req: Request, res: Response) =>
       success: false,
       message: 'Server error while fetching unattended inquiry counts'
     });
-     return;
- }
+  }
 };

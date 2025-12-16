@@ -49,6 +49,4 @@ router.post('/import', upload.single('file'), importStudents);
 // Get all students with pagination
 router.get('/', getStudents);
 
-
 export default router;
-

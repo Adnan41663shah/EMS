@@ -1,17 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from 'react-query';
-import { useQuery as useRQ } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { Search, FileText, Eye, Filter, X, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import apiService from '@/services/api';
-import { Inquiry, InquiryFilters} from '@/types';
+import { Inquiry, InquiryFilters } from '@/types';
 import { cn } from '@/utils/cn';
-import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const AdminMyRaisedInquiries: React.FC = () => {
-  const { user } = useAuth();
   const [filters, setFilters] = useState<InquiryFilters>({
     page: 1,
     limit: 10,
@@ -50,10 +47,8 @@ const AdminMyRaisedInquiries: React.FC = () => {
     }
   );
 
-  const { data: optionsData } = useRQ('options', () => apiService.options.get(), { staleTime: 5 * 60 * 1000 });
+  const { data: optionsData } = useQuery('options', () => apiService.options.get(), { staleTime: 5 * 60 * 1000 });
   const optCourses: string[] = optionsData?.data?.courses || ['CDEC', 'X-DSAAI', 'DevOps', 'Full-Stack', 'Any'];
-  const optLocations: string[] = optionsData?.data?.locations || ['Nagpur', 'Pune', 'Nashik', 'Indore'];
-  const optStatuses: string[] = optionsData?.data?.statuses || ['hot', 'warm', 'cold'];
 
   const inquiries = data?.data?.inquiries || [];
   const pagination = data?.data?.pagination;

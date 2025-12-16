@@ -9,7 +9,7 @@ export interface User {
   updatedAt: string;
 }
 
-export type UserRole = 'user' | 'presales' | 'sales' | 'admin';
+export type UserRole = 'presales' | 'sales' | 'admin';
 
 export interface Inquiry {
   _id: string;
@@ -42,7 +42,7 @@ export type DepartmentType = 'presales' | 'sales';
 
 export type FollowUpType = 'call' | 'email' | 'whatsapp';
 
-export type FollowUpStatus = 'completed' | 'cancelled' | 'rescheduled' | 'no_answer' | 'busy';
+export type FollowUpStatus = 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_answer' | 'busy';
 
 export type FollowUpOutcome = 'positive' | 'neutral' | 'negative' | 'interested' | 'not_interested' | 'needs_time' | 'requested_info' | 'scheduled_meeting';
 

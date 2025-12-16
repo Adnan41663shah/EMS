@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Plus, Search, Users as UsersIcon, Edit3, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -15,7 +15,7 @@ const Users: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'user' as UserRole, isActive: true, password: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'presales' as UserRole, isActive: true, password: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [isFirstAdmin, setIsFirstAdmin] = useState(false);
 
@@ -29,7 +29,7 @@ const Users: React.FC = () => {
 
   const openCreate = () => {
     setEditingUser(null);
-    setForm({ name: '', email: '', phone: '', role: 'user', isActive: true, password: '' });
+    setForm({ name: '', email: '', phone: '', role: 'presales', isActive: true, password: '' });
     setIsFirstAdmin(false);
     setShowModal(true);
   };
@@ -162,7 +162,6 @@ const Users: React.FC = () => {
                 onChange={(e) => handleRoleFilterChange(e.target.value)}
               >
                 <option value="">All Roles</option>
-                <option value="user">Normal User</option>
                 <option value="presales">Presales</option>
                 <option value="sales">Sales</option>
                 <option value="admin">Admin</option>
@@ -211,8 +210,7 @@ const Users: React.FC = () => {
                           "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize",
                           u.role === 'admin' && "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
                           u.role === 'presales' && "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-                          u.role === 'sales' && "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-                          u.role === 'user' && "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                          u.role === 'sales' && "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                         )}>
                           {u.role}
                         </span>
@@ -301,7 +299,6 @@ const Users: React.FC = () => {
                   onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
                   disabled={isFirstAdmin && editingUser?.role === 'admin'}
                 >
-                  <option value="user">User</option>
                   <option value="presales">Presales</option>
                   <option value="sales">Sales</option>
                   <option value="admin">Admin</option>

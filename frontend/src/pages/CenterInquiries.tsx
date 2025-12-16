@@ -380,7 +380,7 @@ const CenterInquiries: React.FC = () => {
                       Attended By
                     </th>
                   )}
-                  {(user?.role === 'admin' || user?.role === 'user') && (
+                  {user?.role === 'admin' && (
                     <>
                       <th className="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Assigned To
@@ -412,7 +412,7 @@ const CenterInquiries: React.FC = () => {
                         <div className="text-xs font-medium text-gray-900 dark:text-white">
                           {inquiry.name}
                         </div>
-                        {(user?.role === 'admin' || user?.role === 'user') && (
+                        {user?.role === 'admin' && (
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             {inquiry.email}
                           </div>
@@ -451,7 +451,7 @@ const CenterInquiries: React.FC = () => {
                         </div>
                       </td>
                     )}
-                    {(user?.role === 'admin' || user?.role === 'user') && (
+                    {user?.role === 'admin' && (
                       <>
                         <td className="px-3 py-1.5 whitespace-nowrap">
                           <div className="text-xs text-gray-900 dark:text-white">

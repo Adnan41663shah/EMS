@@ -9,4 +9,3 @@ export async function notifyUsers(userIds: string[] = [], message: string) {
   }
 }
 
-

@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, Eye, FileText, Trash2, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import apiService from '@/services/api';
-import { FollowUp, InquiryStatus } from '@/types';
-import { getStatusColor, getStatusLabel } from '@/utils/constants';
+import { FollowUp } from '@/types';
 import { cn } from '@/utils/cn';
 import LoadingSpinner from '@/components/LoadingSpinner';
 

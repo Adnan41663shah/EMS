@@ -31,7 +31,7 @@ const Register: React.FC = () => {
     formState: { errors },
   } = useForm<RegisterFormData>({
     defaultValues: {
-      role: 'user',
+      role: 'presales',
     },
   });
 

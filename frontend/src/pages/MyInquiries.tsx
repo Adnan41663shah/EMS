@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from 'react-query';
-import { useQuery as useRQ } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { Search, FileText, Eye, Filter, X, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import apiService from '@/services/api';
-import { Inquiry, InquiryFilters} from '@/types';
+import { Inquiry, InquiryFilters } from '@/types';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -50,10 +49,8 @@ const MyInquiries: React.FC = () => {
     }
   );
 
-  const { data: optionsData } = useRQ('options', () => apiService.options.get(), { staleTime: 5 * 60 * 1000 });
+  const { data: optionsData } = useQuery('options', () => apiService.options.get(), { staleTime: 5 * 60 * 1000 });
   const optCourses: string[] = optionsData?.data?.courses || ['CDEC', 'X-DSAAI', 'DevOps', 'Full-Stack', 'Any'];
-  const optLocations: string[] = optionsData?.data?.locations || ['Nagpur', 'Pune', 'Nashik', 'Indore'];
-  const optStatuses: string[] = optionsData?.data?.statuses || ['hot', 'warm', 'cold'];
 
   const inquiries = data?.data?.inquiries || [];
   const pagination = data?.data?.pagination;
@@ -253,7 +250,7 @@ const MyInquiries: React.FC = () => {
                   <th className="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Location
                   </th>
-                  {(user?.role === 'admin' || user?.role === 'user') && (
+                  {user?.role === 'admin' && (
                     <>
                       <th className="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Created By
@@ -290,7 +287,7 @@ const MyInquiries: React.FC = () => {
                           <div className="text-xs font-medium text-gray-900 dark:text-white">
                             {inquiry.name}
                           </div>
-                          {(user?.role === 'admin' || user?.role === 'user') && (
+                          {user?.role === 'admin' && (
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {inquiry.email}
                             </div>
@@ -309,7 +306,7 @@ const MyInquiries: React.FC = () => {
                     <td className="px-3 py-1.5 whitespace-nowrap text-xs text-gray-900 dark:text-white">
                       {inquiry.preferredLocation}
                     </td>
-                    {(user?.role === 'admin' || user?.role === 'user') && (
+                    {user?.role === 'admin' && (
                       <>
                         <td className="px-3 py-1.5 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-white">
