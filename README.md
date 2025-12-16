@@ -1,59 +1,91 @@
-# CloudBlitz CRM
+# CloudBlitz CRM - Inquiry Management System
 
-A production-grade Customer Relationship Management (CRM) system built with modern technologies. CloudBlitz CRM is a full-stack inquiry management application with role-based access control, real-time notifications, and a beautiful modern UI/UX.
+A production-grade Customer Relationship Management (CRM) system built with modern technologies. CloudBlitz CRM is a full-stack inquiry management application designed specifically for educational institutes to manage student inquiries, with role-based access control for Presales, Sales, and Admin teams.
 
-## 🚀 Features
+## 🎯 Overview
 
-### Core Features
-- **Role-based Access Control**: User, Presales, Sales, and Admin roles with different permissions
-- **Inquiry Management**: Complete CRUD operations for inquiries with advanced filtering
-- **Real-time Notifications**: Socket.IO powered notifications for assignments and updates
-- **Dashboard Analytics**: Comprehensive dashboard with statistics and charts
-- **Follow-up Management**: Track and schedule follow-ups for inquiries
-- **User Management**: Admin panel for managing users and permissions
-- **Search & Filtering**: Advanced search and filter capabilities
-- **Responsive Design**: Mobile-first responsive design with dark/light theme support
+CloudBlitz CRM streamlines the inquiry-to-admission process by providing:
+- **Presales Team**: Handle initial inquiries, qualify leads, and forward hot prospects to Sales
+- **Sales Team**: Convert qualified leads, manage follow-ups, and track admissions
+- **Admin**: Full system oversight, analytics, and user management
 
-### Technical Features
-- **JWT Authentication**: Secure authentication with 3-day token expiry
-- **Google OAuth 2.0**: Social login integration
-- **Real-time Updates**: Socket.IO for live notifications
-- **Type Safety**: Full TypeScript implementation
-- **Modern UI**: Tailwind CSS with Framer Motion animations
-- **API Validation**: Comprehensive input validation and error handling
-- **Security**: Helmet, CORS, rate limiting, and input sanitization
+## 🚀 Key Features
+
+### Inquiry Management
+- **Complete Inquiry Lifecycle**: Create, view, update, and track inquiries from initial contact to admission
+- **Department-based Workflow**: Inquiries flow from Presales → Sales based on qualification
+- **Smart Filtering**: Filter by status (Hot/Warm/Cold), course, location, date range, and more
+- **Bulk Actions**: Efficiently manage multiple inquiries at once
+- **Center-based Organization**: Inquiries organized by location (Nagpur, Pune, Nashik, Indore)
+
+### Follow-up System
+- **Presales Follow-ups**: Track calls, emails, and WhatsApp communications
+- **Sales Follow-ups**: Advanced lead staging with sub-stages for detailed tracking
+- **Lead Stages**: Cold → Warm → Hot → Walkin → Online-Conversion → Not Interested
+- **Follow-up Outcomes**: Track positive, neutral, negative responses and next actions
+- **Mandatory First Follow-up**: Sales users must add initial follow-up when attending an inquiry
+
+### Role-Based Access Control
+| Role | Capabilities |
+|------|-------------|
+| **Presales** | View/create inquiries, attend inquiries, add follow-ups, forward to Sales |
+| **Sales** | Manage assigned inquiries, advanced follow-ups, track admissions, reassign leads |
+| **Admin** | Full access, user management, analytics dashboard, system configuration |
+
+### Dashboard & Analytics (Admin)
+- **Overview Tab**: Key metrics, recent inquiries, status breakdown
+- **Analytics Tab**: Interactive charts - Status distribution, Department split, Course popularity, Location trends, Time-series analysis
+- **Reports Tab**: Exportable reports with filtering by date range
+- **Data Tab**: Raw data management and configuration
+
+### User Interface
+- **Modern Design**: Clean, professional interface with smooth animations
+- **Dark/Light Theme**: System preference detection with manual toggle
+- **Responsive Layout**: Works seamlessly on desktop, tablet, and mobile
+- **Real-time Updates**: Live notification badges for unattended inquiries
+- **Collapsible Sidebar**: Maximize workspace when needed
+
+### Additional Features
+- **Admitted Students Tracking**: Track successful conversions separately
+- **Manage Options**: Admin can configure courses, locations, mediums, and statuses
+- **CSV Export**: Export inquiry data for external reporting
+- **Activity Logging**: Track all actions for audit purposes
 
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Node.js** + **Express.js** (Latest version)
-- **TypeScript** (Strict mode)
-- **MongoDB** + **Mongoose**
-- **JWT Authentication** (3-day expiry)
-- **Google OAuth 2.0** integration
-- **bcrypt** for password hashing
-- **express-validator** for request validation
-- **CORS** + **helmet** for security
-- **Winston** for logging
-- **Socket.IO** for real-time notifications
+| Technology | Purpose |
+|------------|---------|
+| **Node.js + Express.js** | Server framework |
+| **TypeScript** | Type safety and better developer experience |
+| **MongoDB + Mongoose** | Database and ODM |
+| **JWT** | Authentication (3-day token expiry) |
+| **bcryptjs** | Password hashing with salt |
+| **express-rate-limit** | API rate limiting (1000 req/min) |
+| **helmet** | Security headers |
+| **express-mongo-sanitize** | NoSQL injection prevention |
+| **CORS** | Cross-origin resource sharing |
 
 ### Frontend
-- **React 18** + **TypeScript**
-- **Vite** for fast build and development
-- **React Router v6** for routing
-- **Tailwind CSS v3** + dark/light theme
-- **Axios** with interceptors
-- **React Toastify** for notifications
-- **Framer Motion** for animations
-- **React Query** for data fetching
-- **React Hook Form** for form management
+| Technology | Purpose |
+|------------|---------|
+| **React 18** | UI framework |
+| **TypeScript** | Type safety |
+| **Vite** | Build tool and dev server |
+| **React Router v6** | Client-side routing |
+| **React Query** | Server state management and caching |
+| **React Hook Form** | Form handling with validation |
+| **Tailwind CSS v3** | Utility-first styling |
+| **Framer Motion** | Animations and transitions |
+| **Recharts** | Data visualization charts |
+| **Lucide React** | Icon library |
+| **React Toastify** | Toast notifications |
+| **Axios** | HTTP client with interceptors |
 
 ## 📋 Prerequisites
 
-Before running this application, make sure you have the following installed:
-
-- **Node.js** (v18 or higher)
-- **MongoDB** (v5 or higher)
+- **Node.js** v18 or higher
+- **MongoDB** v5 or higher (local or MongoDB Atlas)
 - **npm** or **yarn**
 
 ## 🚀 Quick Start
@@ -68,19 +100,15 @@ cd EMS-CloudBlitz
 ### 2. Install Dependencies
 
 ```bash
-# Install root dependencies
-npm install
-
 # Install all dependencies (backend + frontend)
 npm run install:all
 ```
 
 ### 3. Environment Setup
 
-#### Backend Environment
 Create a `.env` file in the `backend` directory:
 
-```bash
+```env
 # Server Configuration
 PORT=5000
 NODE_ENV=development
@@ -92,280 +120,256 @@ MONGODB_URI=mongodb://localhost:27017/cloudblitz-crm
 JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random
 JWT_EXPIRE=3d
 
-# Google OAuth (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
 # CORS
 FRONTEND_URL=http://localhost:3000
 
 # Rate Limiting
-# General API rate limit: 1000 requests per minute (60000ms)
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX_REQUESTS=1000
-# Auth endpoint rate limit: 100 attempts per 15 minutes
 AUTH_RATE_LIMIT_MAX=100
 ```
 
-#### Frontend Environment
-The frontend will automatically proxy API requests to `http://localhost:5000`.
-
-### 4. Start MongoDB
-
-Make sure MongoDB is running on your system:
+### 4. Start the Application
 
 ```bash
-# Using MongoDB service
-sudo systemctl start mongod
-
-# Or using MongoDB Compass
-# Start MongoDB Compass and ensure it's running on localhost:27017
-```
-
-### 5. Run the Application
-
-#### Development Mode (Recommended)
-```bash
-# Run both backend and frontend concurrently
+# Development mode (runs both backend and frontend)
 npm run dev
+
+# Or run individually
+npm run server:dev  # Backend on port 5000
+npm run client:dev  # Frontend on port 3000
 ```
 
-#### Individual Services
-```bash
-# Backend only
-npm run server:dev
-
-# Frontend only
-npm run client:dev
-```
-
-### 6. Access the Application
+### 5. Access the Application
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
-- **API Health Check**: http://localhost:5000/health
+- **Health Check**: http://localhost:5000/health
 
-## 👥 Default User Accounts
+## 👥 User Roles
 
-The application comes with demo user accounts for testing:
+| Role | Email | Password | Access Level |
+|------|-------|----------|--------------|
+| **Admin** | admin@cloudblitz.com | admin123 | Full system access |
+| **Sales** | sales@cloudblitz.com | sales123 | Sales department |
+| **Presales** | presales@cloudblitz.com | presales123 | Presales department |
 
-| Role | Email | Password | Description |
-|------|-------|----------|-------------|
-| Admin | admin@cloudblitz.com | admin123 | Full system access |
-| Sales | sales@cloudblitz.com | sales123 | Sales management |
-| Presales | presales@cloudblitz.com | presales123 | Presales management |
-| User | user@cloudblitz.com | user123 | Basic user access |
+> **Note**: New user registrations default to Presales role. Admin can change roles through User Management.
 
-## 🏗️ Project Structure
+## 📁 Project Structure
 
 ```
 EMS-CloudBlitz/
-├── backend/                 # Backend API
+├── backend/
 │   ├── src/
-│   │   ├── config/         # Database configuration
-│   │   ├── controllers/    # Route controllers
-│   │   ├── middleware/     # Custom middleware
-│   │   ├── models/         # MongoDB models
-│   │   ├── routes/         # API routes
-│   │   ├── types/          # TypeScript types
-│   │   ├── utils/          # Utility functions
-│   │   └── server.ts       # Main server file
-│   ├── package.json
-│   └── tsconfig.json
-├── frontend/               # Frontend React app
+│   │   ├── config/          # Database configuration
+│   │   ├── controllers/     # Request handlers
+│   │   │   ├── authController.ts
+│   │   │   ├── inquiryController.ts
+│   │   │   ├── userController.ts
+│   │   │   └── ...
+│   │   ├── middleware/      # Auth, validation middleware
+│   │   ├── models/          # MongoDB schemas
+│   │   │   ├── User.ts
+│   │   │   ├── Inquiry.ts
+│   │   │   └── ...
+│   │   ├── routes/          # API route definitions
+│   │   ├── types/           # TypeScript interfaces
+│   │   ├── utils/           # Helper functions
+│   │   └── server.ts        # Application entry point
+│   └── package.json
+│
+├── frontend/
 │   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── contexts/       # React contexts
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API services
-│   │   ├── types/          # TypeScript types
-│   │   ├── utils/          # Utility functions
-│   │   ├── App.tsx         # Main app component
-│   │   └── main.tsx        # Entry point
-│   ├── package.json
-│   └── vite.config.ts
-├── package.json            # Root package.json
+│   │   ├── components/      # Reusable UI components
+│   │   │   ├── Layout.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── CreateInquiryModal.tsx
+│   │   │   ├── FollowUpModal.tsx
+│   │   │   └── ...
+│   │   ├── contexts/        # React contexts (Auth, Theme)
+│   │   ├── pages/           # Page components
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── Inquiries.tsx
+│   │   │   ├── InquiryDetails.tsx
+│   │   │   ├── PresalesAssigned.tsx
+│   │   │   ├── SalesAssigned.tsx
+│   │   │   └── ...
+│   │   ├── services/        # API service layer
+│   │   ├── types/           # TypeScript types
+│   │   ├── utils/           # Utility functions
+│   │   └── App.tsx          # Main application
+│   └── package.json
+│
 └── README.md
 ```
 
 ## 🔧 API Endpoints
 
 ### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/auth/profile` - Get user profile
-- `PUT /api/auth/profile` - Update user profile
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | User login |
+| GET | `/api/auth/profile` | Get current user profile |
+| PUT | `/api/auth/profile` | Update profile |
 
 ### Inquiries
-- `GET /api/inquiries` - Get all inquiries (with filters)
-- `GET /api/inquiries/:id` - Get inquiry by ID
-- `POST /api/inquiries` - Create new inquiry
-- `PUT /api/inquiries/:id` - Update inquiry
-- `DELETE /api/inquiries/:id` - Delete inquiry
-- `POST /api/inquiries/:id/assign` - Assign inquiry to user
-- `POST /api/inquiries/:id/follow-up` - Add follow-up
-- `GET /api/inquiries/dashboard` - Get dashboard statistics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/inquiries` | List inquiries (with filters) |
+| GET | `/api/inquiries/:id` | Get inquiry details |
+| POST | `/api/inquiries` | Create new inquiry |
+| PUT | `/api/inquiries/:id` | Update inquiry |
+| DELETE | `/api/inquiries/:id` | Delete inquiry |
+| POST | `/api/inquiries/:id/claim` | Claim/attend an inquiry |
+| POST | `/api/inquiries/:id/follow-up` | Add follow-up |
+| PUT | `/api/inquiries/:id/follow-up/:followUpId` | Update follow-up |
+| POST | `/api/inquiries/:id/forward-to-sales` | Forward to Sales |
+| POST | `/api/inquiries/:id/reassign-to-sales` | Reassign to another Sales user |
+| GET | `/api/inquiries/dashboard` | Dashboard statistics |
+| GET | `/api/inquiries/unattended-counts` | Unattended inquiry counts |
 
 ### Users (Admin only)
-- `GET /api/users` - Get all users
-- `GET /api/users/:id` - Get user by ID
-- `POST /api/users` - Create new user
-- `PUT /api/users/:id` - Update user
-- `DELETE /api/users/:id` - Delete user
-- `PATCH /api/users/:id/toggle-status` - Toggle user status
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/users` | List all users |
+| POST | `/api/users` | Create user |
+| PUT | `/api/users/:id` | Update user |
+| DELETE | `/api/users/:id` | Delete user |
+| PATCH | `/api/users/:id/toggle-status` | Activate/deactivate user |
 
-### Notifications
-- `GET /api/notifications` - Get user notifications
-- `GET /api/notifications/unread-count` - Get unread count
-- `PATCH /api/notifications/:id/read` - Mark as read
-- `PATCH /api/notifications/mark-all-read` - Mark all as read
-- `DELETE /api/notifications/:id` - Delete notification
+### Options Management (Admin only)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/options` | Get all options |
+| PUT | `/api/options` | Update options |
 
-## 🎨 UI Components
+## 📊 Workflow
 
-### Design System
-- **Color Palette**: Primary, secondary, success, warning, error colors
-- **Typography**: Inter font family with proper hierarchy
-- **Components**: Buttons, inputs, cards, badges, modals
-- **Animations**: Framer Motion powered smooth transitions
-- **Theme**: Dark/Light mode with system preference detection
+### Presales Workflow
+```
+1. New Inquiry Created → Appears in "All Inquiries"
+2. Presales Claims Inquiry → Moves to "My Attended Inquiries"
+3. Add Follow-ups → Track communication history
+4. Qualify Lead → Update status (Hot/Warm/Cold)
+5. Forward to Sales → Transfers to Sales department
+```
 
-### Key Components
-- **Layout**: Responsive sidebar and navbar
-- **Dashboard**: Statistics cards and charts
-- **Tables**: Sortable and filterable data tables
-- **Forms**: Validated forms with error handling
-- **Modals**: Reusable modal components
-- **Notifications**: Toast notifications and in-app alerts
+### Sales Workflow
+```
+1. Inquiry Forwarded → Appears in Sales "All Inquiries"
+2. Sales Claims Inquiry → Must add first follow-up
+3. Track Lead Stage → Cold → Warm → Hot
+4. Add Follow-ups → With detailed sub-stages
+5. Convert → Mark as Walkin or Online-Conversion
+6. Optional: Reassign to another Sales user
+```
+
+### Admin Workflow
+```
+1. Monitor all inquiries across departments
+2. View analytics and generate reports
+3. Manage users and their roles
+4. Configure system options
+5. Track admitted students
+```
 
 ## 🔐 Security Features
 
-- **JWT Authentication**: Secure token-based authentication
-- **Password Hashing**: bcrypt with salt rounds
-- **Input Validation**: Comprehensive validation using express-validator
-- **Rate Limiting**: API rate limiting to prevent abuse
-- **CORS**: Configured CORS for secure cross-origin requests
-- **Helmet**: Security headers for protection
+- **JWT Authentication**: Secure 3-day token-based sessions
+- **Password Security**: bcrypt hashing with 12 salt rounds
+- **Rate Limiting**: 1000 requests/minute to prevent abuse
 - **Input Sanitization**: MongoDB injection prevention
-- **Role-based Access**: Granular permission system
+- **Security Headers**: Helmet.js protection
+- **CORS Configuration**: Controlled cross-origin access
+- **Role-based Authorization**: Endpoint-level permission checks
+
+## 🎨 UI/UX Features
+
+- **Gradient Theme**: Beautiful orange-to-purple sidebar gradient
+- **Dark Mode**: Full dark theme support
+- **Responsive Design**: Mobile-first approach
+- **Loading States**: Skeleton loaders and spinners
+- **Toast Notifications**: Success/error feedback
+- **Form Validation**: Real-time validation with helpful messages
+- **Keyboard Navigation**: Accessible interface
+- **Collapsible Sidebar**: More screen space when needed
 
 ## 🚀 Deployment
 
-### Backend Deployment
-
-1. **Build the application**:
-   ```bash
-   cd backend
-   npm run build
-   ```
-
-2. **Set production environment variables**:
-   ```bash
-   NODE_ENV=production
-   MONGODB_URI=your-production-mongodb-uri
-   JWT_SECRET=your-production-jwt-secret
-   ```
-
-3. **Start the application**:
-   ```bash
-   npm start
-   ```
-
-### Frontend Deployment
-
-1. **Build the application**:
-   ```bash
-   cd frontend
-   npm run build
-   ```
-
-2. **Deploy the `dist` folder** to your hosting service (Vercel, Netlify, etc.)
-
-### Docker Deployment (Optional)
-
-Create a `Dockerfile` in the root directory:
-
-```dockerfile
-# Backend Dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY backend/package*.json ./
-RUN npm install
-COPY backend/ .
-RUN npm run build
-EXPOSE 5000
-CMD ["npm", "start"]
-```
-
-## 🧪 Testing
-
-### Backend Testing
+### Backend Production Build
 ```bash
 cd backend
-npm test
+npm run build
+NODE_ENV=production npm start
 ```
 
-### Frontend Testing
+### Frontend Production Build
 ```bash
 cd frontend
-npm test
+npm run build
+# Deploy dist/ folder to hosting service
 ```
 
-## 📝 Development Guidelines
+### Environment Variables for Production
+```env
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://your-production-uri
+JWT_SECRET=your-very-long-random-production-secret
+FRONTEND_URL=https://your-frontend-domain.com
+```
 
-### Code Style
-- **TypeScript**: Strict mode enabled
-- **ESLint**: Configured for code quality
-- **Prettier**: Code formatting
-- **Conventional Commits**: Standardized commit messages
+## 📈 Performance
 
-### Git Workflow
-1. Create feature branches from `main`
-2. Make atomic commits with descriptive messages
-3. Create pull requests for code review
-4. Merge after approval and testing
+- **Request Handling**: Supports 1000+ concurrent users
+- **Rate Limit**: 1000 requests per minute per IP
+- **Token Expiry**: 3-day sessions for user convenience
+- **Query Optimization**: Indexed MongoDB queries
+- **Frontend Caching**: React Query with smart cache invalidation
+
+## 🧪 Development
+
+### Code Quality
+- TypeScript strict mode enabled
+- ESLint for code linting
+- Prettier for formatting
+- Consistent naming conventions
+
+### Building for Development
+```bash
+# Run type checking
+npm run type-check
+
+# Build backend
+cd backend && npm run build
+
+# Build frontend
+cd frontend && npm run build
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/new-feature`)
+3. Commit changes (`git commit -m 'Add new feature'`)
+4. Push to branch (`git push origin feature/new-feature`)
+5. Create Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/your-repo/issues) page
-2. Create a new issue with detailed information
-3. Contact the development team
-
-## 🎯 Roadmap
-
-### Upcoming Features
-- [ ] Advanced analytics and reporting
-- [ ] Email integration for notifications
-- [ ] File upload for inquiries
-- [ ] Mobile app (React Native)
-- [ ] Advanced search with Elasticsearch
-- [ ] Multi-tenant support
-- [ ] API documentation with Swagger
-- [ ] Automated testing suite
-- [ ] CI/CD pipeline
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- **React** team for the amazing framework
-- **Express.js** team for the robust backend framework
-- **MongoDB** team for the flexible database
-- **Tailwind CSS** team for the utility-first CSS framework
-- **Framer Motion** team for the smooth animations
+- React team for the excellent UI framework
+- Express.js for the robust backend framework
+- MongoDB for the flexible document database
+- Tailwind CSS for the utility-first CSS framework
+- Framer Motion for smooth animations
+- Recharts for beautiful data visualizations
 
 ---
 
-**CloudBlitz CRM** - Built with ❤️ for modern businesses
+**CloudBlitz CRM** - Streamlining Inquiry Management for Educational Institutes 🎓
