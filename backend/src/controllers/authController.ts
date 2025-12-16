@@ -169,10 +169,22 @@ export const getProfile = async (req: Request, res: Response) => {
       });
     }
 
+    // Return consistent user structure with 'id' instead of '_id'
     const response: ApiResponse = {
       success: true,
       message: 'Profile retrieved successfully',
-      data: { user }
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          isActive: user.isActive,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        }
+      }
     };
 
     res.json(response);

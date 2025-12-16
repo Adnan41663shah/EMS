@@ -174,11 +174,6 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
       // Wait a bit to ensure backend has processed
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Clear required flag if this was the first follow-up
-      if (isRequired && !followUp) {
-        localStorage.removeItem('pendingSalesFollowUp');
-      }
-      
       onSuccess();
       reset();
       setSelectedLeadStage('Cold');

@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Plus, Search, Users as UsersIcon, Edit3, Trash2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import apiService from '@/services/api';
 import { User, UserRole } from '@/types';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -16,6 +17,7 @@ const Users: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'user' as UserRole, isActive: true, password: '' });
   const [isSaving, setIsSaving] = useState(false);
+  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
 
   const { data, isLoading } = useQuery(
     ['admin-users', search, roleFilter, page, limit],
@@ -28,11 +30,38 @@ const Users: React.FC = () => {
   const openCreate = () => {
     setEditingUser(null);
     setForm({ name: '', email: '', phone: '', role: 'user', isActive: true, password: '' });
+    setIsFirstAdmin(false);
     setShowModal(true);
   };
-  const openEdit = (u: User) => {
+  const openEdit = async (u: User) => {
     setEditingUser(u);
     setForm({ name: u.name, email: u.email, phone: u.phone || '', role: u.role, isActive: u.isActive, password: '' });
+    
+    // Check if this user is the first admin
+    if (u.role === 'admin') {
+      try {
+        // Fetch all admins to find the first one
+        const adminsResponse = await apiService.users.getAll({ role: 'admin', limit: 1000 });
+        const admins = adminsResponse.data?.users || [];
+        if (admins.length > 0) {
+          // Sort by createdAt to find the first admin
+          const sortedAdmins = [...admins].sort((a, b) => 
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+          const firstAdmin = sortedAdmins[0];
+          const userId = u.id || (u as any)._id;
+          const firstAdminId = firstAdmin.id || (firstAdmin as any)._id;
+          setIsFirstAdmin(userId === firstAdminId);
+        } else {
+          setIsFirstAdmin(false);
+        }
+      } catch (error) {
+        setIsFirstAdmin(false);
+      }
+    } else {
+      setIsFirstAdmin(false);
+    }
+    
     setShowModal(true);
   };
 
@@ -63,20 +92,40 @@ const Users: React.FC = () => {
       }
       setShowModal(false);
       queryClient.invalidateQueries(['admin-users']);
+    } catch (error: any) {
+      // Show error message from backend
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to save user';
+      alert(errorMessage);
+      throw error;
     } finally {
       setIsSaving(false);
     }
   };
 
   const toggleStatus = async (u: User) => {
-    await apiService.users.toggleStatus(u.id || (u as any)._id);
-    queryClient.invalidateQueries(['admin-users']);
+    try {
+      await apiService.users.toggleStatus(u.id || (u as any)._id);
+      queryClient.invalidateQueries(['admin-users']);
+    } catch (error: any) {
+      // Silently handle the error - show toast message from backend
+      // The error is expected (e.g., trying to deactivate own account)
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to toggle user status';
+      toast.error(errorMessage);
+      // Don't re-throw to prevent unhandled promise rejection
+    }
   };
 
   const deleteUser = async (u: User) => {
     if (!confirm('Delete this user?')) return;
-    await apiService.users.delete(u.id || (u as any)._id);
-    queryClient.invalidateQueries(['admin-users']);
+    try {
+      await apiService.users.delete(u.id || (u as any)._id);
+      queryClient.invalidateQueries(['admin-users']);
+      toast.success('User deleted successfully');
+    } catch (error: any) {
+      // Show error message from backend
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete user';
+      toast.error(errorMessage);
+    }
   };
 
   return (
@@ -246,12 +295,22 @@ const Users: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
-                <select className="input text-xs sm:text-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}>
+                <select 
+                  className="input text-xs sm:text-sm" 
+                  value={form.role} 
+                  onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
+                  disabled={isFirstAdmin && editingUser?.role === 'admin'}
+                >
                   <option value="user">User</option>
                   <option value="presales">Presales</option>
                   <option value="sales">Sales</option>
                   <option value="admin">Admin</option>
                 </select>
+                {isFirstAdmin && editingUser?.role === 'admin' && (
+                  <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                    The first admin cannot change their own role.
+                  </p>
+                )}
               </div>
               {!editingUser && (
                 <div className="md:col-span-2">

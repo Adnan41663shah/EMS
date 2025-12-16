@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, Eye, Download, Filter, X, ChevronDown } from 'lucide-react';
+import { Plus, Search, FileText, Eye, Filter, X, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
@@ -12,7 +12,6 @@ import { cn } from '@/utils/cn';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import CreateInquiryModal from '@/components/CreateInquiryModal';
-import { convertInquiriesToCSV, downloadCSV } from '@/utils/exportCSV';
 
 const Inquiries: React.FC = () => {
   const [filters, setFilters] = useState<InquiryFilters>({
@@ -25,7 +24,6 @@ const Inquiries: React.FC = () => {
     dateTo: undefined,
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
@@ -260,47 +258,6 @@ const Inquiries: React.FC = () => {
     navigate(`/inquiries/${inquiryId}`);
   };
 
-  const handleExport = async () => {
-    setIsExporting(true);
-    try {
-      // Build export filters
-      const exportFilters: InquiryFilters = {
-        ...filters,
-      };
-      
-      // Fetch all inquiries matching the filters
-      const response = await apiService.inquiries.getAll(exportFilters);
-      
-      const allInquiries = response?.data?.inquiries || [];
-      
-      if (allInquiries.length === 0) {
-        alert('No inquiries found to export with the current filters.');
-        setIsExporting(false);
-        return;
-      }
-      
-      // Convert to CSV
-      const csvContent = convertInquiriesToCSV(allInquiries);
-      
-      // Generate filename with filters
-      const dateStr = filters.dateFrom || filters.dateTo
-        ? `_${(filters.dateFrom || 'start').replace(/-/g, '')}_to_${(filters.dateTo || 'end').replace(/-/g, '')}`
-        : '';
-      const statusStr = filters.status ? `_${filters.status}` : '';
-      const locationStr = filters.location ? `_${filters.location.replace(/\s+/g, '_')}` : '';
-      const courseStr = filters.course ? `_${filters.course.replace(/\s+/g, '_')}` : '';
-      const filename = `All_Inquiries${dateStr}${statusStr}${locationStr}${courseStr}_${new Date().toISOString().split('T')[0]}.csv`;
-      
-      // Download CSV
-      downloadCSV(csvContent, filename);
-    } catch (error) {
-      console.error('Export error:', error);
-      alert('Failed to export inquiries. Please try again.');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -383,16 +340,6 @@ const Inquiries: React.FC = () => {
                 </span>
               </button>
             </div>
-          )}
-          {user?.role === 'presales' && (
-            <button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="btn btn-primary btn-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              {isExporting ? 'Exporting...' : 'Export CSV'}
-            </button>
           )}
           {user?.role !== 'sales' && (
             <button 

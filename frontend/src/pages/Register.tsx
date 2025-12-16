@@ -13,7 +13,6 @@ interface RegisterFormData {
   email: string;
   password: string;
   confirmPassword: string;
-  phone?: string;
   role: string;
 }
 
@@ -175,36 +174,6 @@ const Register: React.FC = () => {
               {errors.email && (
                 <p className="mt-1.5 text-sm text-red-600">
                   {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label 
-                htmlFor="phone" 
-                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
-              >
-                Phone Number (Optional)
-              </label>
-              <input
-                {...register('phone', {
-                  validate: (value) => {
-                    if (!value || value.trim() === '') return true; // Allow empty
-                    return /^[0-9]{10}$/.test(value) || 'Please enter a valid 10-digit phone number';
-                  },
-                })}
-                type="tel"
-                autoComplete="tel"
-                className={cn(
-                  'w-full px-4 py-3 sm:py-3.5 text-sm sm:text-base text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B35] focus:border-transparent transition-all',
-                  errors.phone && 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                )}
-                placeholder="Enter your phone number"
-              />
-              {errors.phone && (
-                <p className="mt-1.5 text-sm text-red-600">
-                  {errors.phone.message}
                 </p>
               )}
             </div>

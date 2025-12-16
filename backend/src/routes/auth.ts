@@ -19,13 +19,6 @@ const registerValidation = [
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long'),
-  body('phone')
-    .optional({ checkFalsy: true })
-    .custom((value) => {
-      if (!value || value.trim() === '') return true;
-      return /^[0-9]{10}$/.test(value);
-    })
-    .withMessage('Please provide a valid 10-digit phone number'),
   body('role')
     .optional()
     .isIn(['user', 'presales', 'sales', 'admin'])

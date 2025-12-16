@@ -17,7 +17,7 @@ const CenterInquiries: React.FC = () => {
   const decodedLocation = centerLocation ? decodeURIComponent(centerLocation) : '';
   const [filters, setFilters] = useState<InquiryFilters>({
     page: 1,
-    limit: 10,
+    limit: 1000,
     search: '',
     status: undefined,
     course: undefined,
@@ -75,7 +75,6 @@ const CenterInquiries: React.FC = () => {
   const optStatuses: string[] = optionsData?.data?.statuses || ['hot', 'warm', 'cold'];
 
   const allInquiries = data?.data?.inquiries || [];
-  const pagination = data?.data?.pagination;
   
   // Helper function to check if an inquiry is admitted (Hot + Confirmed Admission)
   const isAdmitted = (inq: Inquiry): boolean => {
@@ -137,15 +136,6 @@ const CenterInquiries: React.FC = () => {
     if (filters.dateFrom) count++;
     if (filters.dateTo) count++;
     return count;
-  };
-
-  const handlePageChange = (page: number) => {
-    setFilters(prev => ({ 
-      ...prev, 
-      page,
-      // Ensure location always stays the same as the route
-      location: decodedLocation as LocationType,
-    }));
   };
 
   const getRowBg = (inq: Inquiry) => {
@@ -358,11 +348,11 @@ const CenterInquiries: React.FC = () => {
       {/* Inquiries Table */}
       <div className="card">
         <div className="card-content border-2">
-          {/* Results Count - Top Left */}
-          {pagination && (pagination.totalPages > 0 || inquiries.length > 0) && (
-            <div className="b-2">
+          {/* Results Count */}
+          {inquiries.length > 0 && (
+            <div className="px-6 pt-4 pb-2">
               <div className="text-sm text-gray-700 dark:text-gray-300">
-                Showing {inquiries.length} of {pagination.totalItems} results
+                Showing {inquiries.length} inquiries
               </div>
             </div>
           )}
@@ -528,32 +518,6 @@ const CenterInquiries: React.FC = () => {
           )}
         </div>
 
-        {/* Pagination - Right Side */}
-        {pagination && (pagination.totalPages > 0 || inquiries.length > 0) && (
-          <div className="card-footer">
-            <div className="flex items-center justify-end">
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={!pagination.hasPrev}
-                  className="btn btn-outline btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <span className="flex items-center px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
-                  Page {pagination.currentPage} of {pagination.totalPages || 1}
-                </span>
-                <button
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={!pagination.hasNext}
-                  className="btn btn-outline btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

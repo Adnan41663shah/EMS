@@ -54,6 +54,9 @@ class ApiService {
           toast.error('Access denied. Insufficient permissions.');
         } else if (error.response?.status >= 500 && !isAuthRequest) {
           toast.error('Server error. Please try again later.');
+        } else if (error.response?.status === 400 && !isAuthRequest) {
+          // Don't show toast for 400 errors - let components handle validation/error messages
+          // This prevents duplicate toasts when components show their own error messages
         } else if (error.response?.data?.message && !isAuthRequest) {
           toast.error(error.response.data.message);
         } else if (!isAuthRequest) {

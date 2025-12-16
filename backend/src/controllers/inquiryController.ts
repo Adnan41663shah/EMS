@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import Inquiry from '../models/Inquiry';
 import Activity from '../models/Activity';
 import User from '../models/User';
@@ -185,6 +186,11 @@ export const getInquiries = async (req: Request, res: Response) => {
     // Handle assignedTo filter - for presales "My Attended Inquiries", include forwarded inquiries
     // This must completely override role-based filtering to allow forwarded inquiries in sales department
     if (assignedTo) {
+      // Convert assignedTo to ObjectId for proper MongoDB comparison
+      const assignedToObjectId = mongoose.Types.ObjectId.isValid(assignedTo) 
+        ? new mongoose.Types.ObjectId(assignedTo) 
+        : assignedTo;
+        
       if (userRole === 'presales') {
         // For presales "My Attended Inquiries", we need to completely rebuild the query
         // to show both assigned inquiries (presales) and forwarded inquiries (sales)
@@ -194,11 +200,11 @@ export const getInquiries = async (req: Request, res: Response) => {
         
         // Build the base query with assigned and forwarded inquiries
         const assignedQuery = { 
-          assignedTo: assignedTo,
+          assignedTo: assignedToObjectId,
           department: 'presales'
         };
         const forwardedQuery = {
-          forwardedBy: assignedTo,
+          forwardedBy: assignedToObjectId,
           assignmentStatus: 'forwarded_to_sales',
           department: 'sales'
         };
@@ -242,11 +248,47 @@ export const getInquiries = async (req: Request, res: Response) => {
         // Replace query completely
         Object.keys(query).forEach(key => delete query[key]);
         Object.assign(query, newQuery);
+      } else if (userRole === 'sales') {
+        // For sales users, rebuild query completely to override role-based filtering
+        const newQuery: any = {};
+        
+        // Build query for sales user's attended inquiries
+        newQuery.assignedTo = assignedToObjectId;
+        newQuery.department = 'sales';
+        
+        // Apply other filters
+        if (status) newQuery.status = status;
+        if (course) newQuery.course = course;
+        if (location) newQuery.preferredLocation = location;
+        if (medium) newQuery.medium = medium;
+        if ((req.query as any).assignmentStatus) newQuery.assignmentStatus = (req.query as any).assignmentStatus;
+        
+        // Handle search
+        if (search) {
+          const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          newQuery.$or = [
+            { name: { $regex: escapedSearch, $options: 'i' } },
+            { email: { $regex: escapedSearch, $options: 'i' } },
+            { city: { $regex: escapedSearch, $options: 'i' } }
+          ];
+        }
+        
+        // Handle date filters
+        if (dateFrom || dateTo) {
+          newQuery.createdAt = {};
+          if (dateFrom) newQuery.createdAt.$gte = new Date(dateFrom);
+          if (dateTo) newQuery.createdAt.$lte = new Date(dateTo);
+        }
+        
+        // Replace query completely
+        Object.keys(query).forEach(key => delete query[key]);
+        Object.assign(query, newQuery);
       } else {
-        query.assignedTo = assignedTo;
+        // For admin users, use ObjectId for assignedTo
+        query.assignedTo = assignedToObjectId;
         if ((req.query as any).department) query.department = (req.query as any).department;
         
-        // Apply other filters for non-presales users
+        // Apply other filters for admin users
         if ((req.query as any).assignmentStatus) query.assignmentStatus = (req.query as any).assignmentStatus;
         if (course) query.course = course;
         if (location) query.preferredLocation = location;

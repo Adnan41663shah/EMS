@@ -157,6 +157,28 @@ export const updateUser = async (req: Request, res: Response) => {
     const { name, email, phone, role, isActive } = req.body;
     const userId = req.params.id;
 
+    // Get the user being updated to check current role
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if trying to change role of the first admin
+    if (role && currentUser.role === 'admin' && role !== 'admin') {
+      // Find the first admin (admin with earliest createdAt)
+      const firstAdmin = await User.findOne({ role: 'admin' }).sort({ createdAt: 1 });
+      
+      if (firstAdmin && firstAdmin._id.toString() === userId) {
+        return res.status(403).json({
+          success: false,
+          message: 'The first admin cannot change their own role. The first admin account must remain as admin.'
+        });
+      }
+    }
+
     // Check if email is being changed and if it already exists
     if (email) {
       const existingUser = await User.findOne({ email, _id: { $ne: userId } });
