@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 interface IActivity extends Document {
   inquiry: mongoose.Types.ObjectId;
-  action: 'created' | 'claimed' | 'assigned' | 'reassigned' | 'forwarded_to_sales';
+  action: 'created' | 'claimed' | 'assigned' | 'reassigned' | 'forwarded_to_sales' | 'moved_to_unattended';
   actor: mongoose.Types.ObjectId;
   targetUser?: mongoose.Types.ObjectId;
   details?: string;
@@ -13,7 +13,7 @@ const activitySchema = new Schema<IActivity>({
   inquiry: { type: Schema.Types.ObjectId, ref: 'Inquiry', required: true },
   action: { 
     type: String, 
-    enum: ['created', 'claimed', 'assigned', 'reassigned', 'forwarded_to_sales'], 
+    enum: ['created', 'claimed', 'assigned', 'reassigned', 'forwarded_to_sales', 'moved_to_unattended'], 
     required: true 
   },
   actor: { type: Schema.Types.ObjectId, ref: 'User', required: true },

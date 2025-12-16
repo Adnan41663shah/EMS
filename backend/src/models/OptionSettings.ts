@@ -36,8 +36,5 @@ const optionSettingsSchema = new Schema<IOptionSettings>({
   }
 }, { timestamps: true });
 
-// Index for better query performance
-optionSettingsSchema.index({ key: 1 });
-
 const OptionSettings = mongoose.model<IOptionSettings>('OptionSettings', optionSettingsSchema);
 export default OptionSettings;

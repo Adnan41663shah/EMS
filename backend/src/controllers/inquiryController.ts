@@ -72,8 +72,7 @@ export const createInquiry = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while creating inquiry'
     });
-     return;
- }
+  }
 };
 
 export const getInquiries = async (req: Request, res: Response) => {

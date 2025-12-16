@@ -33,8 +33,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       success: false,
       message: 'Invalid token.'
     });
-     return;
- }
+  }
 };
 
 export const authorize = (...roles: string[]) => {

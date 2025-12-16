@@ -83,7 +83,6 @@ export const register = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error during registration'
     });
-    return;
   }
 };
 
@@ -155,7 +154,6 @@ export const login = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error during login'
     });
-    return;
   }
 };
 
@@ -194,7 +192,6 @@ export const getProfile = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while fetching profile'
     });
-    return;
   }
 };
 
@@ -236,6 +233,5 @@ export const updateProfile = async (req: Request, res: Response) => {
       success: false,
       message: 'Server error while updating profile'
     });
-    return;
   }
 };
