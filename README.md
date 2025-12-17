@@ -44,11 +44,12 @@ CloudBlitz CRM streamlines the inquiry-to-admission process by providing:
 - **Responsive Layout**: Works seamlessly on desktop, tablet, and mobile
 - **Real-time Updates**: Live notification badges for unattended inquiries
 - **Collapsible Sidebar**: Maximize workspace when needed
+- **Persistent Sessions**: Stay logged in for 3 days even after closing browser
 
 ### Additional Features
 - **Admitted Students Tracking**: Track successful conversions separately
 - **Manage Options**: Admin can configure courses, locations, mediums, and statuses
-- **CSV Export**: Export inquiry data for external reporting
+- **CSV Export**: Export inquiry data for external reporting (Admin & Sales)
 - **Activity Logging**: Track all actions for audit purposes
 
 ## 🛠️ Tech Stack
@@ -100,7 +101,23 @@ cd EMS-CloudBlitz
 ### 2. Install Dependencies
 
 ```bash
-# Install all dependencies (backend + frontend)
+# Install root dependencies (for running both servers together)
+npm install
+
+# Install backend dependencies
+cd backend
+npm install
+
+# Install frontend dependencies
+cd ../frontend
+npm install
+
+# Go back to root
+cd ..
+```
+
+Or use the shortcut:
+```bash
 npm run install:all
 ```
 
@@ -132,12 +149,15 @@ AUTH_RATE_LIMIT_MAX=100
 ### 4. Start the Application
 
 ```bash
-# Development mode (runs both backend and frontend)
+# Development mode (runs both backend and frontend together)
 npm run dev
 
-# Or run individually
-npm run server:dev  # Backend on port 5000
-npm run client:dev  # Frontend on port 3000
+# Or run individually in separate terminals:
+# Terminal 1 - Backend
+cd backend && npm run dev
+
+# Terminal 2 - Frontend
+cd frontend && npm run dev
 ```
 
 ### 5. Access the Application
@@ -148,11 +168,11 @@ npm run client:dev  # Frontend on port 3000
 
 ## 👥 User Roles
 
-| Role | Email | Password | Access Level |
-|------|-------|----------|--------------|
-| **Admin** | admin@cloudblitz.com | admin123 | Full system access |
-| **Sales** | sales@cloudblitz.com | sales123 | Sales department |
-| **Presales** | presales@cloudblitz.com | presales123 | Presales department |
+| Role | Access Level |
+|------|--------------|
+| **Admin** | Full system access - user management, analytics, all inquiries |
+| **Sales** | Sales department - manage assigned inquiries, follow-ups, conversions |
+| **Presales** | Presales department - handle new inquiries, qualify leads, forward to sales |
 
 > **Note**: New user registrations default to Presales role. Admin can change roles through User Management.
 
@@ -160,6 +180,7 @@ npm run client:dev  # Frontend on port 3000
 
 ```
 EMS-CloudBlitz/
+├── package.json            # Root - scripts to run both servers
 ├── backend/
 │   ├── src/
 │   │   ├── config/          # Database configuration
@@ -175,7 +196,7 @@ EMS-CloudBlitz/
 │   │   │   └── ...
 │   │   ├── routes/          # API route definitions
 │   │   ├── types/           # TypeScript interfaces
-│   │   ├── utils/           # Helper functions
+│   │   ├── utils/           # Helper functions (JWT, logger)
 │   │   └── server.ts        # Application entry point
 │   └── package.json
 │
@@ -227,7 +248,7 @@ EMS-CloudBlitz/
 | POST | `/api/inquiries/:id/follow-up` | Add follow-up |
 | PUT | `/api/inquiries/:id/follow-up/:followUpId` | Update follow-up |
 | POST | `/api/inquiries/:id/forward-to-sales` | Forward to Sales |
-| POST | `/api/inquiries/:id/reassign-to-sales` | Reassign to another Sales user |
+| POST | `/api/inquiries/:id/reassign-sales` | Reassign to another Sales user |
 | GET | `/api/inquiries/dashboard` | Dashboard statistics |
 | GET | `/api/inquiries/unattended-counts` | Unattended inquiry counts |
 
@@ -278,7 +299,8 @@ EMS-CloudBlitz/
 
 ## 🔐 Security Features
 
-- **JWT Authentication**: Secure 3-day token-based sessions
+- **JWT Authentication**: Secure 3-day token-based sessions stored in localStorage
+- **Persistent Login**: Users stay logged in for 3 days even after closing browser
 - **Password Security**: bcrypt hashing with 12 salt rounds
 - **Rate Limiting**: 1000 requests/minute to prevent abuse
 - **Input Sanitization**: MongoDB injection prevention
@@ -313,6 +335,11 @@ npm run build
 # Deploy dist/ folder to hosting service
 ```
 
+### Full Build (from root)
+```bash
+npm run build
+```
+
 ### Environment Variables for Production
 ```env
 NODE_ENV=production
@@ -320,6 +347,26 @@ MONGODB_URI=mongodb+srv://your-production-uri
 JWT_SECRET=your-very-long-random-production-secret
 FRONTEND_URL=https://your-frontend-domain.com
 ```
+
+## 🛠️ Troubleshooting
+
+### Port Already in Use
+If you get `EADDRINUSE: address already in use :::5000`:
+```bash
+# Kill the process using port 5000
+npx kill-port 5000
+
+# Then restart
+npm run dev
+```
+
+### MongoDB Connection Issues
+- Ensure MongoDB is running locally or your Atlas connection string is correct
+- Check if `MONGODB_URI` in `.env` is properly configured
+
+### Frontend Not Loading
+- Check if backend is running on port 5000
+- Verify the Vite proxy configuration in `frontend/vite.config.ts`
 
 ## 📈 Performance
 
@@ -331,23 +378,35 @@ FRONTEND_URL=https://your-frontend-domain.com
 
 ## 🧪 Development
 
+### Available Scripts
+
+**From Root:**
+```bash
+npm run dev          # Run both backend and frontend
+npm run build        # Build both for production
+npm run install:all  # Install all dependencies
+```
+
+**Backend:**
+```bash
+cd backend
+npm run dev          # Development with hot reload
+npm run build        # TypeScript compilation
+npm start            # Run production build
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm run dev          # Development server
+npm run build        # Production build
+npm run preview      # Preview production build
+```
+
 ### Code Quality
 - TypeScript strict mode enabled
 - ESLint for code linting
-- Prettier for formatting
 - Consistent naming conventions
-
-### Building for Development
-```bash
-# Run type checking
-npm run type-check
-
-# Build backend
-cd backend && npm run build
-
-# Build frontend
-cd frontend && npm run build
-```
 
 ## 🤝 Contributing
 
