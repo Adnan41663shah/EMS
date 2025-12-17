@@ -5,8 +5,11 @@ A production-grade Customer Relationship Management (CRM) system built with mode
 ## 🎯 Overview
 
 CloudBlitz CRM streamlines the inquiry-to-admission process by providing:
+
 - **Presales Team**: Handle initial inquiries, qualify leads, and forward hot prospects to Sales
+
 - **Sales Team**: Convert qualified leads, manage follow-ups, and track admissions
+
 - **Admin**: Full system oversight, analytics, and user management
 
 ## 🚀 Key Features
