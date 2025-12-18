@@ -55,7 +55,6 @@ const DataTab: React.FC = () => {
       if (response.success) {
         const imported = response.data?.imported || 0;
         const duplicates = response.data?.duplicates || 0;
-        const total = response.data?.total || 0;
         
         let successMessage = `Successfully imported ${imported} student${imported !== 1 ? 's' : ''}!`;
         if (duplicates > 0) {
