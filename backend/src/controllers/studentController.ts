@@ -93,13 +93,13 @@ export const importStudents = async (req: Request, res: Response) => {
       if (field) columnMap[field] = index;
     });
 
-    const students: Partial<IStudent>[] = [];
+    const students: Array<Partial<IStudent> & { _rowIndex?: number }> = [];
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       if (row.every(cell => !cell)) continue;
 
-      const student: Partial<IStudent> = {
+      const student: Partial<IStudent> & { _rowIndex?: number } = {
         studentName: '-',
         mobileNumber: '-',
         email: '-',
@@ -110,6 +110,7 @@ export const importStudents = async (req: Request, res: Response) => {
         createdBy: '-',
         attendedAt: '-',
         notes: '-',
+        _rowIndex: i + 1, // Store row number (1-indexed, +1 for header row)
       };
 
       Object.keys(columnMap).forEach((field) => {
@@ -133,18 +134,85 @@ export const importStudents = async (req: Request, res: Response) => {
       });
     }
 
-    await Student.insertMany(students, { ordered: false });
+    // Check for duplicates and filter them out
+    const existingMobileNumbers = await Student.find({
+      mobileNumber: { $in: students.map(s => s.mobileNumber).filter(m => m !== '-') }
+    }).select('mobileNumber').lean();
+
+    const existingMobiles = new Set(existingMobileNumbers.map(s => s.mobileNumber).filter((m): m is string => m !== undefined && m !== '-'));
+    const newStudents = students.filter(s => {
+      const mobile = s.mobileNumber;
+      // Keep if mobile is '-' or undefined (these are not duplicates)
+      if (mobile === '-' || !mobile) return true;
+      // Check if mobile exists in the set of existing mobiles
+      return !existingMobiles.has(mobile);
+    });
+    const duplicatesCount = students.length - newStudents.length;
+    
+    // Remove _rowIndex before bulk insert attempt
+    const studentsToInsert = newStudents.map(({ _rowIndex, ...student }) => student);
+
+    if (!newStudents.length) {
+      return res.status(400).json({
+        success: false,
+        message: `All ${students.length} students already exist in the database (duplicate mobile numbers)`,
+        data: {
+          imported: 0,
+          duplicates: duplicatesCount,
+          total: students.length,
+        },
+      });
+    }
+
+    let importedCount = 0;
+    let errors: string[] = [];
+
+    try {
+      // Try to insert all at once first
+      await Student.insertMany(studentsToInsert, { ordered: false });
+      importedCount = newStudents.length;
+    } catch (error: any) {
+      // If bulk insert fails, try inserting one by one to get detailed errors
+      console.warn('Bulk insert failed, trying individual inserts:', error.message);
+      
+      for (const student of newStudents) {
+        try {
+          // Remove _rowIndex before inserting
+          const { _rowIndex, ...studentData } = student;
+          await Student.create(studentData);
+          importedCount++;
+        } catch (err: any) {
+          const rowNum = student._rowIndex || 'unknown';
+          const errorMsg = `Row ${rowNum}: ${err.message || 'Failed to insert'}`;
+          errors.push(errorMsg);
+          console.error('Failed to insert student:', errorMsg);
+        }
+      }
+    }
+
+    const responseMessage = duplicatesCount > 0
+      ? `Imported ${importedCount} students. ${duplicatesCount} duplicates skipped.`
+      : `Imported ${importedCount} students successfully`;
 
     res.status(200).json({
       success: true,
-      message: `Imported ${students.length} students successfully`,
+      message: responseMessage,
+      data: {
+        imported: importedCount,
+        duplicates: duplicatesCount,
+        total: students.length,
+        errors: errors.length > 0 ? errors : undefined,
+      },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Import error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to import students',
+      message: error.message || 'Failed to import students',
+      data: {
+        imported: 0,
+      },
     });
   }
 };
