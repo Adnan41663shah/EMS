@@ -53,7 +53,23 @@ const DataTab: React.FC = () => {
       const response = await apiService.students.import(file);
       
       if (response.success) {
-        toast.success(`Successfully imported ${response.data?.imported || 0} students!`);
+        const imported = response.data?.imported || 0;
+        const duplicates = response.data?.duplicates || 0;
+        const total = response.data?.total || 0;
+        
+        let successMessage = `Successfully imported ${imported} student${imported !== 1 ? 's' : ''}!`;
+        if (duplicates > 0) {
+          successMessage += ` ${duplicates} duplicate${duplicates !== 1 ? 's' : ''} skipped.`;
+        }
+        
+        toast.success(successMessage);
+        
+        // Show errors if any
+        if (response.data?.errors && response.data.errors.length > 0) {
+          console.warn('Import errors:', response.data.errors);
+          toast.warning(`${response.data.errors.length} row(s) had errors. Check console for details.`);
+        }
+        
         // Reset file input
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -62,7 +78,15 @@ const DataTab: React.FC = () => {
         queryClient.invalidateQueries(['students']);
         refetch();
       } else {
-        toast.error(response.message || 'Failed to import students');
+        const imported = response.data?.imported || 0;
+        const duplicates = response.data?.duplicates || 0;
+        let errorMessage = response.message || 'Failed to import students';
+        
+        if (imported > 0) {
+          errorMessage += ` (${imported} imported, ${duplicates} duplicates)`;
+        }
+        
+        toast.error(errorMessage);
       }
     } catch (error: any) {
       console.error('Import error:', error);
