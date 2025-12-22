@@ -22,7 +22,7 @@ class ApiService {
     // Request interceptor to add auth token
     this.api.interceptors.request.use(
       (config) => {
-        const token = sessionStorage.getItem('token');
+        const token = localStorage.getItem('token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -45,8 +45,8 @@ class ApiService {
         if (error.response?.status === 401) {
           // Token expired or invalid
           if (!isAuthRequest) {
-            sessionStorage.removeItem('token');
-            sessionStorage.removeItem('user');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
             window.location.href = '/login';
             toast.error('Session expired. Please login again.');
           }

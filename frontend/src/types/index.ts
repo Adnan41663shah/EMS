@@ -65,7 +65,9 @@ export interface FollowUp {
   updatedAt: string;
 }
 
-export type SalesLeadStage = 'Cold' | 'Warm' | 'Hot' | 'Not Interested' | 'Walkin' | 'Online-Conversion';
+// Dynamic type - lead stages are now configurable by admin
+// Using string type to allow any admin-configured lead stage
+export type SalesLeadStage = string;
 
 
 export interface ApiResponse<T = any> {

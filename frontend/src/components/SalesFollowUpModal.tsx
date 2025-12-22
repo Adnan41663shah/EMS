@@ -40,12 +40,12 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
   const [selectedLeadStage, setSelectedLeadStage] = useState<SalesLeadStage | ''>('');
 
   // Fetch lead stages from API
-  const { data: optionsData } = useQuery(
+  const { data: optionsData, isLoading: isLoadingOptions } = useQuery(
     'options',
     () => apiService.options.get(),
     { 
-      staleTime: 0, // Always consider data stale to ensure fresh data
-      refetchOnWindowFocus: true, // Refetch when window gains focus
+      staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+      refetchOnWindowFocus: false, // Don't refetch on every focus
       refetchOnMount: true // Refetch when component mounts
     }
   );
@@ -73,7 +73,7 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
   } = useForm<SalesFollowUpFormData>({
     defaultValues: {
       type: 'call',
-      leadStage: 'Cold' as SalesLeadStage,
+      leadStage: '' as SalesLeadStage, // Will be set dynamically when leadStages load
       subStage: '',
       nextFollowUpDate: new Date().toISOString().split('T')[0],
       nextFollowUpTime: new Date().toTimeString().slice(0, 5),
@@ -100,23 +100,27 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
   useEffect(() => {
     if (!isOpen) return; // Don't reset when modal is closed
 
-    // Only proceed if leadStages is available
-    if (leadStages.length === 0) return;
+    // Wait for options to load
+    if (isLoadingOptions || leadStages.length === 0) return;
 
     const defaultLeadStage = leadStages[0].label as SalesLeadStage;
 
     if (followUp) {
       const nextFollowUpDate = followUp.nextFollowUpDate ? new Date(followUp.nextFollowUpDate) : undefined;
+      // Use existing leadStage if valid, otherwise use default
+      const validLeadStage = leadStages.find(s => s.label === followUp.leadStage) 
+        ? followUp.leadStage 
+        : defaultLeadStage;
 
       reset({
         type: followUp.type,
-        leadStage: followUp.leadStage || defaultLeadStage,
+        leadStage: validLeadStage || defaultLeadStage,
         subStage: followUp.subStage || '',
         nextFollowUpDate: nextFollowUpDate?.toISOString().split('T')[0],
         nextFollowUpTime: nextFollowUpDate?.toTimeString().slice(0, 5),
         message: followUp.message || '',
       });
-      setSelectedLeadStage(followUp.leadStage || defaultLeadStage);
+      setSelectedLeadStage(validLeadStage || defaultLeadStage);
     } else {
       // Set default values for new follow-up, including current date and time for next follow-up
       const now = new Date();
@@ -134,7 +138,7 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
       setSelectedLeadStage(defaultLeadStage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, followUp?._id]);
+  }, [isOpen, followUp?._id, leadStages]);
 
   const handleFormSubmit = async (data: SalesFollowUpFormData) => {
     try {
@@ -176,7 +180,12 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
       
       onSuccess();
       reset();
-      setSelectedLeadStage('Cold');
+      // Reset to first available lead stage dynamically
+      if (leadStages.length > 0) {
+        setSelectedLeadStage(leadStages[0].label as SalesLeadStage);
+      } else {
+        setSelectedLeadStage('');
+      }
       onClose();
     } catch (error: any) {
       console.error('Error saving follow-up:', error);
@@ -196,7 +205,12 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
     
     if (!isLoading) {
       reset();
-      setSelectedLeadStage('Cold');
+      // Reset to first available lead stage dynamically
+      if (leadStages.length > 0) {
+        setSelectedLeadStage(leadStages[0].label as SalesLeadStage);
+      } else {
+        setSelectedLeadStage('');
+      }
       onClose();
     }
   };
@@ -242,6 +256,16 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
               </div>
 
               {/* Form */}
+              {isLoadingOptions ? (
+                <div className="p-6 flex items-center justify-center">
+                  <LoadingSpinner size="md" />
+                  <span className="ml-3 text-gray-600 dark:text-gray-400">Loading options...</span>
+                </div>
+              ) : leadStages.length === 0 ? (
+                <div className="p-6 text-center">
+                  <p className="text-red-600 dark:text-red-400">No lead stages configured. Please contact admin.</p>
+                </div>
+              ) : (
               <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
                 {/* Type */}
                 <div>
@@ -383,6 +407,7 @@ const SalesFollowUpModal: React.FC<SalesFollowUpModalProps> = ({
                   </button>
                 </div>
               </form>
+              )}
             </motion.div>
           </div>
         </div>

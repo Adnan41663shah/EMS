@@ -22,6 +22,7 @@ import {
 } from '../controllers/inquiryController';
 import { authenticate, authorize } from '../middleware/auth';
 import { handleValidationErrors } from '../middleware/validation';
+import { getLeadStages } from '../controllers/optionsController';
 import OptionSettings from '../models/OptionSettings';
 
 const router = Router();
@@ -296,20 +297,38 @@ const addFollowUpValidation = [
     .optional()
     .isIn(['hot', 'warm', 'cold'])
     .withMessage('Invalid inquiry status'),
-  // Sales-specific fields
+  // Sales-specific fields - Dynamic validation
   body('leadStage')
     .optional()
-    .isIn(['Cold', 'Warm', 'Hot', 'Not Interested', 'Walkin', 'Online-Conversion'])
-    .withMessage('Invalid lead stage'),
+    .custom(async (value) => {
+      if (!value) return true; // Optional field
+      const leadStages = await getLeadStages();
+      const validLabels = leadStages.map(stage => stage.label);
+      if (!validLabels.includes(value)) {
+        throw new Error(`Invalid lead stage. Must be one of: ${validLabels.join(', ')}`);
+      }
+      return true;
+    }),
   body('subStage')
     .optional({ checkFalsy: true })
     .trim()
-    .custom((value) => {
+    .custom(async (value, { req }) => {
       if (!value || value.trim() === '') {
         return true; // Empty subStage is allowed
       }
       if (value.length < 1 || value.length > 200) {
         throw new Error('Sub-stage must be between 1 and 200 characters');
+      }
+      // Validate sub-stage belongs to selected lead stage
+      const leadStage = req.body.leadStage;
+      if (leadStage) {
+        const leadStages = await getLeadStages();
+        const selectedStage = leadStages.find(stage => stage.label === leadStage);
+        if (selectedStage && selectedStage.subStages.length > 0) {
+          if (!selectedStage.subStages.includes(value)) {
+            throw new Error(`Sub-stage "${value}" is not valid for lead stage "${leadStage}"`);
+          }
+        }
       }
       return true;
     }),
@@ -363,20 +382,38 @@ const updateFollowUpValidation = [
     .optional()
     .isIn(['hot', 'warm', 'cold'])
     .withMessage('Invalid inquiry status'),
-  // Sales-specific fields
+  // Sales-specific fields - Dynamic validation
   body('leadStage')
     .optional()
-    .isIn(['Cold', 'Warm', 'Hot', 'Not Interested', 'Walkin', 'Online-Conversion'])
-    .withMessage('Invalid lead stage'),
+    .custom(async (value) => {
+      if (!value) return true; // Optional field
+      const leadStages = await getLeadStages();
+      const validLabels = leadStages.map(stage => stage.label);
+      if (!validLabels.includes(value)) {
+        throw new Error(`Invalid lead stage. Must be one of: ${validLabels.join(', ')}`);
+      }
+      return true;
+    }),
   body('subStage')
     .optional({ checkFalsy: true })
     .trim()
-    .custom((value) => {
+    .custom(async (value, { req }) => {
       if (!value || value.trim() === '') {
         return true; // Empty subStage is allowed
       }
       if (value.length < 1 || value.length > 200) {
         throw new Error('Sub-stage must be between 1 and 200 characters');
+      }
+      // Validate sub-stage belongs to selected lead stage
+      const leadStage = req.body.leadStage;
+      if (leadStage) {
+        const leadStages = await getLeadStages();
+        const selectedStage = leadStages.find(stage => stage.label === leadStage);
+        if (selectedStage && selectedStage.subStages.length > 0) {
+          if (!selectedStage.subStages.includes(value)) {
+            throw new Error(`Sub-stage "${value}" is not valid for lead stage "${leadStage}"`);
+          }
+        }
       }
       return true;
     }),
