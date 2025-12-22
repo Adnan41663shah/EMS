@@ -841,8 +841,9 @@ export const addFollowUp = async (req: Request, res: Response) => {
 
     // Update inquiry status based on lead stage (for sales) or inquiryStatus (for presales)
     if (leadStage && inquiry.department === 'sales') {
-      // Map lead stage to inquiry status (use lowercase with underscores for consistency)
-      const leadStageToStatus: { [key: string]: InquiryStatus } = {
+      // Dynamic mapping: Try to map lead stage to status
+      // Default mapping for common stages, fallback to 'cold' for unknown stages
+      const defaultMapping: { [key: string]: InquiryStatus } = {
         'Hot': 'hot',
         'Warm': 'warm',
         'Cold': 'cold',
@@ -850,10 +851,10 @@ export const addFollowUp = async (req: Request, res: Response) => {
         'Walkin': 'walkin',
         'Online-Conversion': 'online_conversion'
       };
-      const mappedStatus = leadStageToStatus[leadStage];
-      if (mappedStatus) {
-        inquiry.status = mappedStatus;
-      }
+      
+      // Check if we have a default mapping, otherwise use 'cold' as fallback
+      const mappedStatus = defaultMapping[leadStage] || 'cold';
+      inquiry.status = mappedStatus;
     } else if (inquiryStatus && ['hot', 'warm', 'cold'].includes(inquiryStatus)) {
       // Update inquiry status if inquiryStatus is provided (for presales)
       inquiry.status = inquiryStatus;
@@ -947,8 +948,9 @@ export const updateFollowUp = async (req: Request, res: Response) => {
     // Update inquiry status based on lead stage (for sales) or inquiryStatus (for presales)
     // Priority: leadStage for sales inquiries, inquiryStatus for presales inquiries
     if (leadStage !== undefined && inquiry.department === 'sales') {
-      // Map lead stage to inquiry status for sales inquiries (use lowercase with underscores for consistency)
-      const leadStageToStatus: { [key: string]: InquiryStatus } = {
+      // Dynamic mapping: Try to map lead stage to status
+      // Default mapping for common stages, fallback to 'cold' for unknown stages
+      const defaultMapping: { [key: string]: InquiryStatus } = {
         'Hot': 'hot',
         'Warm': 'warm',
         'Cold': 'cold',
@@ -956,10 +958,10 @@ export const updateFollowUp = async (req: Request, res: Response) => {
         'Walkin': 'walkin',
         'Online-Conversion': 'online_conversion'
       };
-      const mappedStatus = leadStageToStatus[leadStage];
-      if (mappedStatus) {
-        inquiry.status = mappedStatus;
-      }
+      
+      // Check if we have a default mapping, otherwise use 'cold' as fallback
+      const mappedStatus = defaultMapping[leadStage] || 'cold';
+      inquiry.status = mappedStatus;
     } else if (inquiryStatus && ['hot', 'warm', 'cold'].includes(inquiryStatus)) {
       // Update inquiry status when follow-up inquiryStatus changes (for presales)
       followUp.inquiryStatus = inquiryStatus;

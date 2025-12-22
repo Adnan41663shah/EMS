@@ -1,16 +1,15 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, FileText, Eye, Filter, X, ChevronDown } from 'lucide-react';
+import { Search, FileText, Eye, Filter, X, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import apiService from '@/services/api';
-import { Inquiry, InquiryFilters, CourseType, LocationType, MediumType, InquiryStatus } from '@/types';
+import { Inquiry, InquiryFilters, InquiryStatus } from '@/types';
 import { getStatusColor, getStatusLabel } from '@/utils/constants';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import CreateInquiryModal from '@/components/CreateInquiryModal';
 
 const Inquiries: React.FC = () => {
   const [filters, setFilters] = useState<InquiryFilters>({
@@ -22,7 +21,6 @@ const Inquiries: React.FC = () => {
     dateFrom: undefined,
     dateTo: undefined,
   });
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
@@ -209,49 +207,6 @@ const Inquiries: React.FC = () => {
     return 'bg-yellow-50 dark:bg-yellow-900/20';
   };
 
-  const handleCreateInquiry = async (data: {
-    name: string;
-    email: string;
-    city: string;
-    education: string;
-    course: CourseType;
-    preferredLocation: LocationType;
-    medium: MediumType;
-    message: string;
-    status?: InquiryStatus;
-  }) => {
-    try {
-      await apiService.inquiries.create(data);
-      toast.success('Inquiry created successfully!');
-      // Refresh the inquiries list and badge counts
-      queryClient.invalidateQueries(['inquiries', filters]);
-      queryClient.invalidateQueries(['unattended-counts']); // Refresh badge counts
-      queryClient.invalidateQueries(['dashboard-stats']);
-    } catch (error: any) {
-      console.error('Error creating inquiry:', error);
-      const errorMessage = error?.response?.data?.message || 'Failed to create inquiry. Please try again.';
-      toast.error(errorMessage);
-      throw error;
-    }
-  };
-
-  const handleMoveToUnattended = async (inquiryId: string) => {
-    try {
-      await apiService.inquiries.moveToUnattended(inquiryId);
-      
-      // Refresh the appropriate queries
-      queryClient.invalidateQueries(['inquiries', filters]);
-      queryClient.invalidateQueries(['unattended-counts']); // Refresh badge counts
-      queryClient.invalidateQueries(['dashboard-stats']);
-      queryClient.invalidateQueries(['sales-assigned']);
-      queryClient.invalidateQueries(['presales-assigned']);
-    } catch (error: any) {
-      console.error('Error moving to unattended:', error);
-      const errorMessage = error?.response?.data?.message || 'Failed to move inquiry to unattended. Please try again.';
-      toast.error(errorMessage);
-      throw error;
-    }
-  };
 
   const handleViewInquiry = (inquiryId: string) => {
     navigate(`/inquiries/${inquiryId}`);
@@ -339,15 +294,6 @@ const Inquiries: React.FC = () => {
                 </span>
               </button>
             </div>
-          )}
-          {user?.role !== 'sales' && (
-            <button 
-              onClick={() => setIsCreateModalOpen(true)}
-              className="btn btn-primary btn-md"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Inquiry
-            </button>
           )}
         </div>
       </div>
@@ -713,7 +659,7 @@ const Inquiries: React.FC = () => {
                 No inquiries found
               </h3>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Get started by creating a new inquiry.
+                No inquiries match your current filters.
               </p>
             </div>
           )}
@@ -721,13 +667,6 @@ const Inquiries: React.FC = () => {
 
       </div>
 
-      {/* Create Inquiry Modal */}
-      <CreateInquiryModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateInquiry}
-        onMoveToUnattended={(user?.role === 'sales' || user?.role === 'presales' || user?.role === 'admin') ? handleMoveToUnattended : undefined}
-      />
     </div>
   );
 };

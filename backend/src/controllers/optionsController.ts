@@ -11,6 +11,33 @@ const ensureSettings = async () => {
   return doc;
 };
 
+// Helper function to get lead stages (used by validation)
+export const getLeadStages = async (): Promise<Array<{ label: string; subStages: string[] }>> => {
+  try {
+    const doc = await ensureSettings();
+    const leadStages = (doc.leadStages || []).map((stage: any) => {
+      if (stage.value && !stage.label) {
+        return { label: stage.value, subStages: stage.subStages || [] };
+      } else if (stage.value && stage.label) {
+        return { label: stage.label, subStages: stage.subStages || [] };
+      }
+      return { label: stage.label, subStages: stage.subStages || [] };
+    });
+    return leadStages;
+  } catch (error) {
+    logger.error('Error fetching lead stages:', error);
+    // Return default stages as fallback
+    return [
+      { label: 'Cold', subStages: [] },
+      { label: 'Warm', subStages: [] },
+      { label: 'Hot', subStages: [] },
+      { label: 'Not Interested', subStages: [] },
+      { label: 'Walkin', subStages: [] },
+      { label: 'Online-Conversion', subStages: [] }
+    ];
+  }
+};
+
 export const getOptions = async (req: Request, res: Response) => {
   try {
     const doc = await ensureSettings();
@@ -66,18 +93,27 @@ export const updateOptions = async (req: Request, res: Response) => {
       updateData.statuses = statuses.filter(Boolean).map(s => s.trim());
     }
     if (leadStages !== undefined) {
-      // Process leadStages - allow empty arrays for deletion
-      // Handle both old format (with value) and new format (label only)
-      updateData.leadStages = leadStages
-        .filter(stage => stage && (stage.label || (stage as any).value))
-        .map(stage => {
-          // Support migration from old format (value + label) to new format (label only)
-          const label = stage.label || (stage as any).value || '';
-          return {
-            label: label.trim(),
-            subStages: (stage.subStages || []).filter(Boolean).map(s => s.trim())
-          };
+      // Validate that at least one lead stage exists
+      const validStages = leadStages.filter(stage => stage && (stage.label || (stage as any).value));
+      if (validStages.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'At least one lead stage is required'
         });
+      }
+      
+      // Process leadStages - Handle both old format (with value) and new format (label only)
+      updateData.leadStages = validStages.map(stage => {
+        // Support migration from old format (value + label) to new format (label only)
+        const label = stage.label || (stage as any).value || '';
+        if (!label.trim()) {
+          throw new Error('Lead stage label cannot be empty');
+        }
+        return {
+          label: label.trim(),
+          subStages: (stage.subStages || []).filter(Boolean).map(s => s.trim())
+        };
+      });
       logger.info(`Updating leadStages: ${JSON.stringify(updateData.leadStages)}`);
     }
     
