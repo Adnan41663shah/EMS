@@ -45,6 +45,20 @@ This document is the master plan for integrating **TeleCMI** IVR calling into th
 
 ## 2. TeleCMI Integration Summary
 
+Before implementing, follow the official TeleCMI **Get Started** guide to:
+
+- Create a TeleCMI account and verify your mobile number.
+- Choose and configure your **business number** (the IVR/DID that will receive calls).
+- Familiarize yourself with TeleCMI **Webhooks** and **Call Analysis APIs**.
+
+Key docs:
+
+- [Get Started](https://doc.telecmi.com/chub/docs/get-started/)
+- [Webhooks Overview](https://doc.telecmi.com/chub/docs/webhooks-overview)
+- [Call Analysis (CDR APIs)](https://doc.telecmi.com/chub/docs/call-analysis)
+- [Login Token (User Authentication)](https://doc.telecmi.com/chub/docs/login-token/)
+- [User Incoming Calls API](https://doc.telecmi.com/chub/docs/agent-incoming/)
+
 ### 2.1 What We Use
 
 | Feature | Purpose |
@@ -58,10 +72,10 @@ This document is the master plan for integrating **TeleCMI** IVR calling into th
 
 | Action | Method | URL | Notes |
 |--------|--------|-----|------|
-| Get user token | POST | `https://rest.telecmi.com/v2/user/login` | Body: `id`, `password` (TeleCMI user) |
+| Get user token | POST | `https://rest.telecmi.com/v2/user/login` | Body: `id`, `password` (TeleCMI user) – see [Login Token](https://doc.telecmi.com/chub/docs/login-token/). |
 | Hangup | POST | `https://rest.telecmi.com/v2/c2c/hangup` | Body: `token`, `cmiuuid` |
-| Incoming CDR (answered/missed) | POST | `https://rest.telecmi.com/v2/user/in_cdr` | Body: `token`, `type`, `from`, `to` (timestamps), `page`, `limit` |
-| Download recording | GET | `https://rest.telecmi.com/v2/play` | Query: `appid`, `secret`, `filename` |
+| Incoming CDR (answered/missed) | POST | `https://rest.telecmi.com/v2/user/in_cdr` | Body: `token`, `type`, `from`, `to` (timestamps), `page`, `limit` – see [User Incoming Calls API](https://doc.telecmi.com/chub/docs/agent-incoming/). |
+| Download recording | GET | `https://rest.telecmi.com/v2/play` | Query: `appid`, `secret`, `filename` – see **Download VoiceMail/Recorded File** in [Call Analysis](https://doc.telecmi.com/chub/docs/call-analysis). |
 
 ### 2.3 Webhook Payloads (Typical)
 
